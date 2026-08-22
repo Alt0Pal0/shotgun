@@ -2,6 +2,7 @@ import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
 import type { Evaluation } from "@/lib/rules";
 import type { ReportModel } from "@/lib/types";
 import { NOT_LEGAL_COPY } from "@/lib/copy";
+import { BRAND } from "@/lib/brand";
 
 const s = StyleSheet.create({
   page: { padding: 40, fontSize: 10, fontFamily: "Helvetica", color: "#111" },
@@ -67,11 +68,11 @@ export function InstructorReport({
     .sort((a, b) => b[1] - a[1])
     .slice(0, 8);
   return (
-    <Document title="Learner progress summary" author="Learner Driver Platform">
+    <Document title="Learner progress summary" author={BRAND}>
       <Page size="LETTER" style={s.page}>
         <Text style={s.h1}>Learner progress summary</Text>
         <Text style={s.sub}>
-          Prepared for the driving instructor · generated {date(generatedAt.toISOString())} · ruleset{" "}
+          Prepared by {BRAND} for the driving instructor · generated {date(generatedAt.toISOString())} · ruleset{" "}
           {evaluation.jurisdiction} {evaluation.version}
         </Text>
         <View style={s.row}>

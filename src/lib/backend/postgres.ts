@@ -11,6 +11,7 @@ import { cookies, headers } from "next/headers";
 import { Pool } from "pg";
 import type { LocationSample } from "@/lib/gps";
 import { appUrl, sendAuthEmail } from "@/lib/email";
+import { BRAND } from "@/lib/brand";
 import { databaseUrl } from "./index";
 import { toAppError } from "./errors";
 import { AppError, type AuthResult, type Backend, type SessionUser } from "./types";
@@ -127,7 +128,7 @@ async function issueAndSend(email: string, kind: "verify" | "reset"): Promise<Au
     email,
     kind === "verify" ? "Verify your email" : "Reset your password",
     link,
-    kind === "verify" ? "Confirm your email to start using Learner Driver Platform:" : "Choose a new password:",
+    kind === "verify" ? `Confirm your email to start using ${BRAND}:` : "Choose a new password:",
   );
   return { ok: true, needsVerification: kind === "verify", devVerifyUrl: r.devLink?.replace(appUrl(), "") };
 }
@@ -166,12 +167,7 @@ export const postgresBackend: Backend = {
       const sid = await server<string>("auth_create_session", { p_user: r.user_id });
       await setCookie(sid);
       const link = `${appUrl()}/auth/verify?token=${r.verify_token}`;
-      const sent = await sendAuthEmail(
-        email,
-        "Verify your email",
-        link,
-        "Confirm your email to start using Learner Driver Platform:",
-      );
+      const sent = await sendAuthEmail(email, "Verify your email", link, `Confirm your email to start using ${BRAND}:`);
       return { ok: true, needsVerification: true, devVerifyUrl: sent.devLink?.replace(appUrl(), "") };
     } catch (e) {
       return { ok: false, error: (e as Error).message };

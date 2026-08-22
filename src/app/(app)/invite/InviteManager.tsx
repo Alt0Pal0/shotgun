@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api, newIdempotencyKey } from "@/lib/client/api";
+import { BRAND } from "@/lib/brand";
 import type { Invitation, RelationshipAdult } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
@@ -34,7 +35,7 @@ export function InviteManager({ adults, invitations }: { adults: RelationshipAdu
       try {
         await navigator.share({
           title: "Supervise my driving practice",
-          text: "Join me on Learner Driver Platform to review my drives.",
+          text: `Join me on ${BRAND} to review my drives.`,
           url: link,
         });
         return;

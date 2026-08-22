@@ -118,3 +118,8 @@ Format: ambiguity → chosen interpretation → alternatives → reasoning → d
   at boot (`AUTO_MIGRATE=1`, advisory-locked).
 - **Files:** supabase/migrations/0000, 0016; src/lib/backend/postgres.ts; src/lib/email.ts; src/lib/migrate.ts;
   src/instrumentation.ts.
+
+## D-019 Product name: Shotgun.Rocks 🤘 (2026-08-22, owner decision)
+
+- The PRD's working title "Learner Driver Platform" is replaced by **Shotgun.Rocks** (domain shotgun.rocks). Brand
+  strings live in `src/lib/brand.ts`; the PRD/traceability docs keep the original title for requirement references.

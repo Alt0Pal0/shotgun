@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { backendConfigured, databaseUrl } from "@/lib/backend";
+import { BRAND_HORNS } from "@/lib/brand";
 
 export default function SetupPage() {
   if (backendConfigured()) redirect("/");
@@ -7,7 +8,7 @@ export default function SetupPage() {
   const hasSecret = (process.env.AUTH_SECRET?.length ?? 0) >= 32;
   return (
     <main id="main" className="mx-auto max-w-md px-5 py-12">
-      <p className="text-xs font-semibold uppercase tracking-widest text-accent">Learner Driver Platform</p>
+      <p className="text-xs font-semibold uppercase tracking-widest text-accent">{BRAND_HORNS}</p>
       <h1 className="mt-2 text-2xl font-bold">Almost there — configuration needed</h1>
       <p className="mt-2 text-sm text-muted">
         The app is built and healthy but is missing environment variables. Set them in Vercel → Project → Settings →

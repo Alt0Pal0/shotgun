@@ -1,4 +1,6 @@
-# Learner Driver Platform — MVP (private beta)
+# Shotgun.Rocks 🤘 — Learner Driver Platform MVP (private beta)
+
+**Ride shotgun. Log the hours. Earn the license.** Live at https://shotgun.rocks (Vercel + Neon).
 
 A mobile-first progressive web app for California learner drivers and their supervising adults. A learner requests a
 drive while parked; the designated in-car adult confirms on their own phone; the learner's app safety-locks while the

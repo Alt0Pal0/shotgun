@@ -1,4 +1,5 @@
 import "server-only";
+import { BRAND } from "@/lib/brand";
 
 /**
  * Transactional email. Uses Resend's HTTP API when RESEND_API_KEY is set. Otherwise, in development or when
@@ -17,7 +18,7 @@ export async function sendAuthEmail(to: string, subject: string, link: string, i
       method: "POST",
       headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
       body: JSON.stringify({
-        from: process.env.EMAIL_FROM ?? "Learner Driver Platform <onboarding@resend.dev>",
+        from: process.env.EMAIL_FROM ?? `${BRAND} <onboarding@resend.dev>`,
         to: [to],
         subject,
         text: `${intro}\n\n${link}\n\nIf you did not request this, you can ignore this email.`,

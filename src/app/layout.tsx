@@ -1,12 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { BRAND, BRAND_SHORT, TAGLINE } from "@/lib/brand";
 import { PwaRegister } from "@/components/PwaRegister";
 
 export const metadata: Metadata = {
-  title: { default: "Learner Driver Platform", template: "%s · Learner Driver Platform" },
-  description: "Safety-first supervised practice tracker for California learner drivers and their supervising adults.",
+  title: { default: BRAND, template: `%s · ${BRAND}` },
+  description: `${TAGLINE} Safety-first supervised practice tracker for California learner drivers and their supervising adults.`,
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Learner Driver" },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: BRAND_SHORT },
 };
 // Every page depends on the signed-in user (cookies); nothing is statically prerendered.
 export const dynamic = "force-dynamic";

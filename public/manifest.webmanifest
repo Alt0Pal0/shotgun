@@ -1,7 +1,7 @@
 {
-  "name": "Learner Driver Platform",
-  "short_name": "Learner Driver",
-  "description": "Safety-first supervised practice tracker for California learner drivers.",
+  "name": "Shotgun.Rocks",
+  "short_name": "Shotgun",
+  "description": "Ride shotgun. Log the hours. Earn the license. Supervised-practice tracker for California learner drivers.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
