@@ -10,9 +10,20 @@ export function useRecorder(sessionId: string, deviceId: string | null, active: 
   useEffect(() => {
     if (!active || !deviceId) return;
     const c = new RecorderController(sessionId, deviceId);
-    const t = setTimeout(() => { setController(c); void c.start(); }, 0);
-    return () => { clearTimeout(t); c.stop(); setController(null); };
+    const t = setTimeout(() => {
+      setController(c);
+      void c.start();
+    }, 0);
+    return () => {
+      clearTimeout(t);
+      c.stop();
+      setController(null);
+    };
   }, [sessionId, deviceId, active]);
-  const state: RecorderState = useSyncExternalStore(controller?.subscribe ?? (() => () => undefined), controller?.getState ?? getServerSnapshot, getServerSnapshot);
+  const state: RecorderState = useSyncExternalStore(
+    controller?.subscribe ?? (() => () => undefined),
+    controller?.getState ?? getServerSnapshot,
+    getServerSnapshot,
+  );
   return { state, flush: () => controller?.flush() ?? Promise.resolve() };
 }

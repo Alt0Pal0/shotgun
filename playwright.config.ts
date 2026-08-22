@@ -8,6 +8,17 @@ export default defineConfig({
   workers: 1,
   retries: 0,
   reporter: [["list"]],
-  use: { baseURL: process.env.E2E_BASE_URL ?? "http://localhost:3000", ...devices["Pixel 7"], trace: "retain-on-failure", permissions: ["geolocation"] },
-  webServer: { command: "pnpm dev", url: "http://localhost:3000/sign-in", reuseExistingServer: true, timeout: 120_000, env: { BACKEND_MODE: "local", NEXT_PUBLIC_GPS_SIMULATOR: "1" } },
+  use: {
+    baseURL: process.env.E2E_BASE_URL ?? "http://localhost:3000",
+    ...devices["Pixel 7"],
+    trace: "retain-on-failure",
+    permissions: ["geolocation"],
+  },
+  webServer: {
+    command: "pnpm dev",
+    url: "http://localhost:3000/sign-in",
+    reuseExistingServer: true,
+    timeout: 120_000,
+    env: { BACKEND_MODE: "local", NEXT_PUBLIC_GPS_SIMULATOR: "1" },
+  },
 });

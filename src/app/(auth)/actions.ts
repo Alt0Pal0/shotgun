@@ -3,17 +3,31 @@ import { redirect } from "next/navigation";
 import { getBackend } from "@/lib/backend";
 import { signInSchema, signUpSchema } from "@/lib/validation/schemas";
 
-export interface AuthState { error?: string; devVerifyUrl?: string; sent?: boolean }
+export interface AuthState {
+  error?: string;
+  devVerifyUrl?: string;
+  sent?: boolean;
+}
 
 export async function signUpAction(_: AuthState, form: FormData): Promise<AuthState> {
-  const parsed = signUpSchema.safeParse({ email: form.get("email"), password: form.get("password"), displayName: form.get("displayName"), role: form.get("role"), ageConfirmed: form.get("ageConfirmed") === "on" });
+  const parsed = signUpSchema.safeParse({
+    email: form.get("email"),
+    password: form.get("password"),
+    displayName: form.get("displayName"),
+    role: form.get("role"),
+    ageConfirmed: form.get("ageConfirmed") === "on",
+  });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Check the form" };
   const backend = await getBackend();
   const r = await backend.signUp(parsed.data);
   if (!r.ok) return { error: r.error };
-  await backend.rpc("track_event", { p_event: "account_created", p_props: { role: parsed.data.role } }).catch(() => undefined);
+  await backend
+    .rpc("track_event", { p_event: "account_created", p_props: { role: parsed.data.role } })
+    .catch(() => undefined);
   const next = form.get("next");
-  redirect(`/verify${r.devVerifyUrl ? `?dev=${encodeURIComponent(r.devVerifyUrl)}` : ""}${typeof next === "string" && next ? `${r.devVerifyUrl ? "&" : "?"}next=${encodeURIComponent(next)}` : ""}`);
+  redirect(
+    `/verify${r.devVerifyUrl ? `?dev=${encodeURIComponent(r.devVerifyUrl)}` : ""}${typeof next === "string" && next ? `${r.devVerifyUrl ? "&" : "?"}next=${encodeURIComponent(next)}` : ""}`,
+  );
 }
 
 export async function signInAction(_: AuthState, form: FormData): Promise<AuthState> {

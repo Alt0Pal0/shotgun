@@ -27,7 +27,13 @@ test("learner and adult complete the full drive-review loop on two phones", asyn
   await adult.page.goto("/reviews");
   await adult.page.getByRole("link", { name: /Drive request/ }).click();
   await expect(adult.page.getByRole("heading", { name: /wants to start a drive/ })).toBeVisible();
-  for (const label of ["I am the designated in-car supervisor", "I am physically present", "The vehicle is parked", "We're ready to begin"]) await adult.page.getByLabel(label).check();
+  for (const label of [
+    "I am the designated in-car supervisor",
+    "I am physically present",
+    "The vehicle is parked",
+    "We're ready to begin",
+  ])
+    await adult.page.getByLabel(label).check();
   await adult.page.getByRole("button", { name: "Confirm and start" }).click();
 
   // Learner's recorder starts the session → safety lock
@@ -49,6 +55,7 @@ test("learner and adult complete the full drive-review loop on two phones", asyn
   expect(detailAsLearner.observations).toEqual([]);
   expect(detailAsLearner.route).toBeNull();
   await expect(learner.page.locator("nav")).toHaveCount(0);
+  await learner.page.screenshot({ path: "test-results/screens/learner-locked.png", fullPage: true });
 
   // Adult live view
   await expect(adult.page.getByTestId("live-view")).toBeVisible({ timeout: 30_000 });
@@ -61,6 +68,7 @@ test("learner and adult complete the full drive-review loop on two phones", asyn
   await adult.page.getByRole("button", { name: "Did well" }).click();
   await adult.page.getByRole("button", { name: "Save without a skill" }).click();
   await expect(adult.page.getByText(/2 observations this drive/)).toBeVisible();
+  await adult.page.screenshot({ path: "test-results/screens/adult-live.png", fullPage: true });
   // Learner still cannot see observations
   expect((await (await learner.page.request.get(`/api/drives/${sessionId}`)).json()).observations).toEqual([]);
 
@@ -89,7 +97,10 @@ test("learner and adult complete the full drive-review loop on two phones", asyn
 
   // Adult review: sees observations + reflection, corrects night minutes with reason, approves
   await adult.page.goto("/reviews");
-  await adult.page.getByRole("link", { name: /Pending review/ }).first().click();
+  await adult.page
+    .getByRole("link", { name: /Pending review/ })
+    .first()
+    .click();
   await expect(adult.page.getByRole("heading", { name: "Jordan Learner" })).toBeVisible();
   await expect(adult.page.getByText("Lane position felt more natural.")).toBeVisible();
   await expect(adult.page.getByRole("list").getByText("Needs practice")).toBeVisible();
@@ -99,6 +110,7 @@ test("learner and adult complete the full drive-review loop on two phones", asyn
   await adult.page.getByRole("radio", { name: "5 of 5" }).first().click();
   await adult.page.getByLabel("What went well").fill("Good control.");
   await adult.page.getByLabel("Practice next").fill("Mirror check earlier.");
+  await adult.page.screenshot({ path: "test-results/screens/adult-review.png", fullPage: true });
   await adult.page.getByRole("button", { name: "APPROVE DRIVE" }).click();
   await expect(adult.page.getByText("Approved", { exact: true })).toBeVisible();
   await expect(adult.page.getByText("Mirror check earlier.")).toBeVisible();
@@ -119,5 +131,21 @@ test("learner and adult complete the full drive-review loop on two phones", asyn
   expect(pdf.headers()["content-type"]).toContain("application/pdf");
   expect((await pdf.body()).length).toBeGreaterThan(2000);
 
-  await learner.ctx.close(); await adult.ctx.close();
+  // Route deletion: map disappears, record (duration, ratings, feedback) stays, re-processing does not resurrect it
+  await learner.page.goto(`/drives/${sessionId}`);
+  await expect(learner.page.getByTestId("route-map")).toBeVisible();
+  await learner.page.getByRole("button", { name: "Delete exact route" }).click();
+  await learner.page.getByRole("button", { name: "Delete route" }).click();
+  await expect(learner.page.getByText(/Exact route deleted on/)).toBeVisible();
+  await expect(learner.page.getByTestId("route-map")).toHaveCount(0);
+  await expect(learner.page.getByText("Mirror check earlier.")).toBeVisible();
+  const afterDelete = await (await learner.page.request.get(`/api/drives/${sessionId}`)).json();
+  expect(afterDelete.route.route_geojson).toBeNull();
+  expect(afterDelete.status).toBe("APPROVED");
+  expect(afterDelete.audit.some((a: { action: string }) => a.action === "route_deleted")).toBe(true);
+  await adult.page.goto(`/drives/${sessionId}`);
+  await expect(adult.page.getByText(/Exact route deleted on/)).toBeVisible();
+
+  await learner.ctx.close();
+  await adult.ctx.close();
 });

@@ -12,7 +12,21 @@ export const GET = withAuth(async ({ backend, req }) => {
   const model = await backend.rpc<ReportModel | null>("report_model", { p_learner: learner });
   if (!model?.learner || !model.track) throw new AppError("NOT_FOUND", "Learner not found", 404);
   const pdf = await renderInstructorPdf(model);
-  await backend.rpc("track_event", { p_event: "instructor_pdf_generated", p_props: { approved_drive_count_bucket: model.approved_sessions.length < 5 ? "0-4" : model.approved_sessions.length < 20 ? "5-19" : "20+" } }).catch(() => undefined);
+  await backend
+    .rpc("track_event", {
+      p_event: "instructor_pdf_generated",
+      p_props: {
+        approved_drive_count_bucket:
+          model.approved_sessions.length < 5 ? "0-4" : model.approved_sessions.length < 20 ? "5-19" : "20+",
+      },
+    })
+    .catch(() => undefined);
   const name = `learner-progress-${new Date().toISOString().slice(0, 10)}.pdf`;
-  return new Response(new Uint8Array(pdf), { headers: { "content-type": "application/pdf", "content-disposition": `attachment; filename="${name}"`, "cache-control": "private, no-store" } });
+  return new Response(new Uint8Array(pdf), {
+    headers: {
+      "content-type": "application/pdf",
+      "content-disposition": `attachment; filename="${name}"`,
+      "cache-control": "private, no-store",
+    },
+  });
 });

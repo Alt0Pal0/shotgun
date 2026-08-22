@@ -67,7 +67,11 @@ export const rulesetConfigSchema = z.object({
   effective_from: z.string(),
   display_name: z.string(),
   night: z
-    .object({ type: z.literal("solar_offset"), after_sunset_minutes: z.number().int(), before_sunrise_minutes: z.number().int() })
+    .object({
+      type: z.literal("solar_offset"),
+      after_sunset_minutes: z.number().int(),
+      before_sunrise_minutes: z.number().int(),
+    })
     .or(z.object({ type: z.literal("fixed_clock"), start: z.string(), end: z.string() }))
     .optional(),
   requirements: z.array(requirementSchema).min(1),

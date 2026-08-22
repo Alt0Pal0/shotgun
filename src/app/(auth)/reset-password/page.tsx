@@ -11,9 +11,18 @@ export default function ResetPage() {
   return (
     <AuthShell title="Choose a new password">
       <form action={action} className="space-y-4">
-        <Input label="New password" name="password" type="password" required minLength={8} autoComplete="new-password" />
+        <Input
+          label="New password"
+          name="password"
+          type="password"
+          required
+          minLength={8}
+          autoComplete="new-password"
+        />
         {state.error && <Alert tone="error">{state.error}</Alert>}
-        <Button type="submit" size="lg" block loading={pending}>Update password</Button>
+        <Button type="submit" size="lg" block loading={pending}>
+          Update password
+        </Button>
       </form>
     </AuthShell>
   );

@@ -1,11 +1,54 @@
 {
-  "jurisdiction": "US-TX", "version": "fixture-1", "effective_from": "2026-01-01", "display_name": "Texas (architecture fixture)",
+  "jurisdiction": "US-TX",
+  "version": "fixture-1",
+  "effective_from": "2026-01-01",
+  "display_name": "Texas (architecture fixture)",
   "requirements": [
-    {"key": "classroom", "type": "duration_total", "label": "Classroom instruction", "target_minutes": 1920, "eligible_session_types": ["PROFESSIONAL_INSTRUCTION"], "category": "classroom"},
-    {"key": "instructor_driving", "type": "duration_total", "label": "Behind-the-wheel with instructor", "target_minutes": 420, "eligible_session_types": ["PROFESSIONAL_INSTRUCTION"], "category": "driving"},
-    {"key": "observation", "type": "duration_total", "label": "In-car observation", "target_minutes": 420, "eligible_session_types": ["PROFESSIONAL_INSTRUCTION"], "category": "observation"},
-    {"key": "supervised_practice", "type": "duration_total", "label": "Supervised practice", "target_minutes": 1800, "eligible_session_types": ["FAMILY_SUPERVISED"]},
-    {"key": "night_subset", "type": "duration_subset", "label": "Night practice", "target_minutes": 600, "parent_requirement": "supervised_practice", "evidence_field": "night_minutes"},
-    {"key": "permit_hold", "type": "waiting_period", "label": "Permit hold", "target_months": 6, "start_field": "permit_issue_date"}
+    {
+      "key": "classroom",
+      "type": "duration_total",
+      "label": "Classroom instruction",
+      "target_minutes": 1920,
+      "eligible_session_types": ["PROFESSIONAL_INSTRUCTION"],
+      "category": "classroom"
+    },
+    {
+      "key": "instructor_driving",
+      "type": "duration_total",
+      "label": "Behind-the-wheel with instructor",
+      "target_minutes": 420,
+      "eligible_session_types": ["PROFESSIONAL_INSTRUCTION"],
+      "category": "driving"
+    },
+    {
+      "key": "observation",
+      "type": "duration_total",
+      "label": "In-car observation",
+      "target_minutes": 420,
+      "eligible_session_types": ["PROFESSIONAL_INSTRUCTION"],
+      "category": "observation"
+    },
+    {
+      "key": "supervised_practice",
+      "type": "duration_total",
+      "label": "Supervised practice",
+      "target_minutes": 1800,
+      "eligible_session_types": ["FAMILY_SUPERVISED"]
+    },
+    {
+      "key": "night_subset",
+      "type": "duration_subset",
+      "label": "Night practice",
+      "target_minutes": 600,
+      "parent_requirement": "supervised_practice",
+      "evidence_field": "night_minutes"
+    },
+    {
+      "key": "permit_hold",
+      "type": "waiting_period",
+      "label": "Permit hold",
+      "target_months": 6,
+      "start_field": "permit_issue_date"
+    }
   ]
 }

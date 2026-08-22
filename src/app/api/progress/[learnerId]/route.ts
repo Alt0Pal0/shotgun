@@ -7,6 +7,11 @@ import type { ProgressModel } from "@/lib/types";
 export const GET = withAuth(async ({ backend, params }) => {
   const model = await backend.rpc<ProgressModel | null>("progress_model", { p_learner: params.learnerId });
   if (!model?.track || !model.ruleset) throw new AppError("NOT_FOUND", "Learner not found", 404);
-  const evaluation = evaluate({ config: parseRuleset(model.ruleset.config), contributions: model.contributions, fields: { permit_issue_date: model.track.permit_issue_date }, now: new Date() });
+  const evaluation = evaluate({
+    config: parseRuleset(model.ruleset.config),
+    contributions: model.contributions,
+    fields: { permit_issue_date: model.track.permit_issue_date },
+    now: new Date(),
+  });
   return json({ evaluation, model });
 });

@@ -7,5 +7,7 @@ export async function GET(req: Request) {
     const backend = await getBackend();
     const r = await backend.rpc("preview_invitation", { p_token: token });
     return json(r);
-  } catch (e) { return errorResponse(e); }
+  } catch (e) {
+    return errorResponse(e);
+  }
 }

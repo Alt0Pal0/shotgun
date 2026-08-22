@@ -15,15 +15,34 @@ export function RequirementCards({ evaluation, compact }: { evaluation: Evaluati
             <div className="mb-1 flex items-baseline justify-between gap-2">
               <span className="text-sm font-medium">{c.label}</span>
               <span className="numeral text-sm font-semibold">
-                {c.unit === "minutes" && c.target != null && <>{(c.approved / 60).toFixed(1)} / {c.target / 60} h</>}
+                {c.unit === "minutes" && c.target != null && (
+                  <>
+                    {(c.approved / 60).toFixed(1)} / {c.target / 60} h
+                  </>
+                )}
                 {c.unit === "days" && c.target != null && <>{c.complete ? "Complete" : `${c.remaining} days left`}</>}
-                {c.unit === "count" && c.target != null && <>{c.approved} / {c.target}</>}
+                {c.unit === "count" && c.target != null && (
+                  <>
+                    {c.approved} / {c.target}
+                  </>
+                )}
                 {c.unit === "boolean" && <>{c.complete ? "On file" : "Needed"}</>}
                 {c.unit === "none" && <span className="text-muted">Info</span>}
               </span>
             </div>
-            {c.percent != null && <ProgressBar value={c.percent} label={`${c.label} progress`} color={COLORS[i % COLORS.length]} />}
-            {c.type === "waiting_period" && c.eligible_on && <p className="mt-1 text-xs text-muted">Eligible no earlier than {new Date(`${c.eligible_on}T00:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>}
+            {c.percent != null && (
+              <ProgressBar value={c.percent} label={`${c.label} progress`} color={COLORS[i % COLORS.length]} />
+            )}
+            {c.type === "waiting_period" && c.eligible_on && (
+              <p className="mt-1 text-xs text-muted">
+                Eligible no earlier than{" "}
+                {new Date(`${c.eligible_on}T00:00:00`).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </p>
+            )}
             {c.note && !compact && <p className="mt-1 text-xs text-muted">{c.note}</p>}
           </li>
         ))}

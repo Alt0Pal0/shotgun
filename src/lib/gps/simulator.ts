@@ -27,20 +27,36 @@ export function simulateDrive(opts: SimulatedDriveOptions): LocationSample[] {
   const lightLen = opts.trafficLightS ?? 0;
   const t0 = (opts.startTime ?? new Date()).getTime();
   const out: LocationSample[] = [];
-  let lat = opts.start.lat, lng = opts.start.lng, seq = 0;
-  const mPerDegLat = 111_320, mPerDegLng = 111_320 * Math.cos((lat * Math.PI) / 180);
+  let lat = opts.start.lat,
+    lng = opts.start.lng,
+    seq = 0;
+  const mPerDegLat = 111_320,
+    mPerDegLng = 111_320 * Math.cos((lat * Math.PI) / 180);
   for (let t = 0; t <= opts.durationS; t += interval) {
     const moving = t < opts.durationS - tail && !(t >= lightAt && t < lightAt + lightLen);
     const heading = (t / opts.durationS) * 180; // gentle arc
     const v = moving ? speed : 0;
     if (moving) {
-      lat += ((v * interval) * Math.cos((heading * Math.PI) / 180)) / mPerDegLat;
-      lng += ((v * interval) * Math.sin((heading * Math.PI) / 180)) / mPerDegLng;
+      lat += (v * interval * Math.cos((heading * Math.PI) / 180)) / mPerDegLat;
+      lng += (v * interval * Math.sin((heading * Math.PI) / 180)) / mPerDegLng;
     }
-    let accuracy = opts.accuracyM ?? 8, plat = lat, plng = lng;
+    let accuracy = opts.accuracyM ?? 8,
+      plat = lat,
+      plng = lng;
     if (opts.injectNoise && t === interval * 7) accuracy = 250; // inaccurate point
-    if (opts.injectNoise && t === interval * 11) { plat = lat + 0.05; plng = lng + 0.05; } // ~7 km jump
-    out.push({ sequence_no: seq++, recorded_at: new Date(t0 + t * 1000).toISOString(), latitude: plat, longitude: plng, accuracy_m: accuracy, speed_mps: v, heading_deg: heading });
+    if (opts.injectNoise && t === interval * 11) {
+      plat = lat + 0.05;
+      plng = lng + 0.05;
+    } // ~7 km jump
+    out.push({
+      sequence_no: seq++,
+      recorded_at: new Date(t0 + t * 1000).toISOString(),
+      latitude: plat,
+      longitude: plng,
+      accuracy_m: accuracy,
+      speed_mps: v,
+      heading_deg: heading,
+    });
   }
   return out;
 }

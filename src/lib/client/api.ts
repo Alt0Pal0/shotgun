@@ -1,10 +1,28 @@
 "use client";
-export class ApiError extends Error { constructor(public code: string, message: string, public status: number, public hint?: string, public issues?: unknown) { super(message); } }
+export class ApiError extends Error {
+  constructor(
+    public code: string,
+    message: string,
+    public status: number,
+    public hint?: string,
+    public issues?: unknown,
+  ) {
+    super(message);
+  }
+}
 
 async function call<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const res = await fetch(path, { method, headers: body ? { "content-type": "application/json" } : undefined, body: body ? JSON.stringify(body) : undefined, credentials: "same-origin" });
+  const res = await fetch(path, {
+    method,
+    headers: body ? { "content-type": "application/json" } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+    credentials: "same-origin",
+  });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) { const e = data?.error ?? {}; throw new ApiError(e.code ?? "ERROR", e.message ?? res.statusText, res.status, e.hint, e.issues); }
+  if (!res.ok) {
+    const e = data?.error ?? {};
+    throw new ApiError(e.code ?? "ERROR", e.message ?? res.statusText, res.status, e.hint, e.issues);
+  }
   return data as T;
 }
 export const api = {
@@ -16,5 +34,7 @@ export const api = {
 };
 
 export function newIdempotencyKey(): string {
-  return typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return typeof crypto !== "undefined" && "randomUUID" in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }

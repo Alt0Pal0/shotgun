@@ -30,11 +30,18 @@ export const requestDriveSchema = z.object({
 });
 
 export const acceptDriveSchema = z.object({
-  designated_supervisor: z.literal(true), physically_present: z.literal(true), vehicle_parked: z.literal(true), ready: z.literal(true),
+  designated_supervisor: z.literal(true),
+  physically_present: z.literal(true),
+  vehicle_parked: z.literal(true),
+  ready: z.literal(true),
   idempotency_key: idempotencyKey,
 });
 
-export const startDriveSchema = z.object({ device_id: uuid, idempotency_key: idempotencyKey, one_phone: z.boolean().default(false) });
+export const startDriveSchema = z.object({
+  device_id: uuid,
+  idempotency_key: idempotencyKey,
+  one_phone: z.boolean().default(false),
+});
 
 export const sampleSchema = z.object({
   sequence_no: z.number().int().min(0),
@@ -110,7 +117,18 @@ export const manualRecordSchema = z.object({
   idempotency_key: idempotencyKey,
 });
 
-export const deleteRouteSchema = z.object({ clear_distance: z.boolean().default(false), reason: z.string().max(280).optional(), confirm: z.literal(true) });
-export const deviceSchema = z.object({ key: z.string().min(16).max(128), platform: z.string().max(40), label: z.string().max(60).optional() });
+export const deleteRouteSchema = z.object({
+  clear_distance: z.boolean().default(false),
+  reason: z.string().max(280).optional(),
+  confirm: z.literal(true),
+});
+export const deviceSchema = z.object({
+  key: z.string().min(16).max(128),
+  platform: z.string().max(40),
+  label: z.string().max(60).optional(),
+});
 export const vehicleSchema = z.object({ id: uuid.nullable().optional(), label: z.string().trim().min(1).max(60) });
-export const analyticsSchema = z.object({ event: z.string().min(1).max(60), properties: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).default({}) });
+export const analyticsSchema = z.object({
+  event: z.string().min(1).max(60),
+  properties: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).default({}),
+});

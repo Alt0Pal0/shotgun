@@ -14,7 +14,9 @@ export default function ForgotPage() {
         <Input label="Email" name="email" type="email" required autoComplete="email" />
         {state.sent && <Alert tone="success">If an account exists for that email, a reset link is on its way.</Alert>}
         {state.error && <Alert tone="error">{state.error}</Alert>}
-        <Button type="submit" size="lg" block loading={pending}>Send reset link</Button>
+        <Button type="submit" size="lg" block loading={pending}>
+          Send reset link
+        </Button>
       </form>
     </AuthShell>
   );

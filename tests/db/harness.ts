@@ -8,7 +8,10 @@ import { randomUUID } from "node:crypto";
 const db = process.env.LOCAL_DB_NAME ?? "ldp_test";
 export const pool = new Pool({ connectionString: process.env.DATABASE_URL ?? `postgres:///${db}`, max: 4 });
 
-export interface TestUser { id: string; email: string }
+export interface TestUser {
+  id: string;
+  email: string;
+}
 
 export async function createUser(prefix = "u"): Promise<TestUser> {
   const email = `${prefix}-${randomUUID().slice(0, 8)}@example.test`;
@@ -20,7 +23,13 @@ export async function createUser(prefix = "u"): Promise<TestUser> {
 }
 
 export class DbError extends Error {
-  constructor(message: string, public code: string | undefined, public hint?: string) { super(message); }
+  constructor(
+    message: string,
+    public code: string | undefined,
+    public hint?: string,
+  ) {
+    super(message);
+  }
 }
 
 function wrap(e: unknown): DbError {
@@ -35,7 +44,9 @@ export async function as<T>(user: TestUser | null, fn: (c: PoolClient) => Promis
     await c.query("begin");
     if (user) {
       await c.query("set local role authenticated");
-      await c.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify({ sub: user.id, role: "authenticated" })]);
+      await c.query("select set_config('request.jwt.claims', $1, true)", [
+        JSON.stringify({ sub: user.id, role: "authenticated" }),
+      ]);
     } else {
       await c.query("set local role anon");
       await c.query("select set_config('request.jwt.claims', '', true)");
@@ -86,7 +97,11 @@ export async function rpcService<T = unknown>(fn: string, args: unknown[] = []):
   });
 }
 
-export async function select<T = Record<string, unknown>>(user: TestUser | null, sql: string, args: unknown[] = []): Promise<T[]> {
+export async function select<T = Record<string, unknown>>(
+  user: TestUser | null,
+  sql: string,
+  args: unknown[] = [],
+): Promise<T[]> {
   return as(user, async (c) => (await c.query(sql, args)).rows as T[]);
 }
 
@@ -114,7 +129,10 @@ export async function makeLearner(permitIssueDate = "2026-03-01") {
 export async function linkAdult(learner: TestUser, adult?: TestUser) {
   const a = adult ?? (await createUser("adult"));
   const inv = await rpc<{ token: string; id: string }>(learner, "create_invitation", []);
-  const rel = await rpc<{ relationship_id: string }>(a, "accept_invitation", [inv.token, "I attest that I am a California-licensed adult age 25 or older and that the information I approve is accurate."]);
+  const rel = await rpc<{ relationship_id: string }>(a, "accept_invitation", [
+    inv.token,
+    "I attest that I am a California-licensed adult age 25 or older and that the information I approve is accurate.",
+  ]);
   return { adult: a, relationshipId: rel.relationship_id };
 }
 
@@ -122,21 +140,51 @@ export async function registerDevice(user: TestUser, key = `dev-${randomUUID()}`
   return rpc<string>(user, "register_device", [key, "test", "Test phone"]);
 }
 
-export interface SessionJson { id: string; status: string; learner_id: string; supervisor_id: string | null }
+export interface SessionJson {
+  id: string;
+  status: string;
+  learner_id: string;
+  supervisor_id: string | null;
+}
 
 /** Full two-phone start: learner requests, adult accepts with all confirmations, recorder starts. */
 export async function startActiveSession(learner: TestUser, adult: TestUser) {
   const device = await registerDevice(learner);
   const req = await rpc<SessionJson>(learner, "request_session", [
-    JSON.stringify({ supervisor_id: adult.id, recorder_device_id: device, supervisor_present: true, idempotency_key: randomUUID() }),
+    JSON.stringify({
+      supervisor_id: adult.id,
+      recorder_device_id: device,
+      supervisor_present: true,
+      idempotency_key: randomUUID(),
+    }),
   ]);
-  await rpc(adult, "accept_session", [req.id, JSON.stringify({ designated_supervisor: true, physically_present: true, vehicle_parked: true, ready: true }), randomUUID()]);
+  await rpc(adult, "accept_session", [
+    req.id,
+    JSON.stringify({ designated_supervisor: true, physically_present: true, vehicle_parked: true, ready: true }),
+    randomUUID(),
+  ]);
   const started = await rpc<SessionJson>(learner, "start_session", [req.id, device, randomUUID(), false]);
   return { session: started, device };
 }
 
-export function sample(seq: number, t: Date, lat: number, lng: number, extra: Partial<{ accuracy_m: number; speed_mps: number; heading_deg: number }> = {}) {
-  return { sequence_no: seq, recorded_at: t.toISOString(), latitude: lat, longitude: lng, accuracy_m: 8, speed_mps: 10, ...extra };
+export function sample(
+  seq: number,
+  t: Date,
+  lat: number,
+  lng: number,
+  extra: Partial<{ accuracy_m: number; speed_mps: number; heading_deg: number }> = {},
+) {
+  return {
+    sequence_no: seq,
+    recorded_at: t.toISOString(),
+    latitude: lat,
+    longitude: lng,
+    accuracy_m: 8,
+    speed_mps: 10,
+    ...extra,
+  };
 }
 
-export async function closePool() { await pool.end(); }
+export async function closePool() {
+  await pool.end();
+}

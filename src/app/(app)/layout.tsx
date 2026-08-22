@@ -8,9 +8,18 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const isLearner = Boolean(me.track);
   const isAdult = Boolean(me.profile?.is_adult || me.learners.length);
   const items = isLearner
-    ? [{ href: "/home", label: "Home", icon: "⌂" }, { href: "/drives", label: "Drives", icon: "≡" }, { href: "/progress", label: "Progress", icon: "◔" }, { href: "/profile", label: "Me", icon: "◯" }]
+    ? [
+        { href: "/home", label: "Home", icon: "⌂" },
+        { href: "/drives", label: "Drives", icon: "≡" },
+        { href: "/progress", label: "Progress", icon: "◔" },
+        { href: "/profile", label: "Me", icon: "◯" },
+      ]
     : isAdult
-      ? [{ href: "/reviews", label: "Reviews", icon: "✓" }, { href: "/learners", label: "Learners", icon: "☺" }, { href: "/profile", label: "Me", icon: "◯" }]
+      ? [
+          { href: "/reviews", label: "Reviews", icon: "✓" },
+          { href: "/learners", label: "Learners", icon: "☺" },
+          { href: "/profile", label: "Me", icon: "◯" },
+        ]
       : [{ href: "/profile", label: "Me", icon: "◯" }];
   const path = (await headers()).get("x-pathname") ?? "";
   const active = items.find((i) => path.startsWith(i.href))?.href ?? items[0].href;

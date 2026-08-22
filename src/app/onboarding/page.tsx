@@ -8,8 +8,15 @@ export default async function OnboardingPage() {
   if (me.track) redirect("/home");
   return (
     <Shell>
-      <PageHeader eyebrow="Learner setup" title="Your permit profile" subtitle="California is the only state available in this beta. Your permit issue date sets the six-month hold." />
-      <OnboardingForm displayName={me.profile?.display_name ?? ""} isAdult={Boolean(me.profile?.is_adult || me.learners.length)} />
+      <PageHeader
+        eyebrow="Learner setup"
+        title="Your permit profile"
+        subtitle="California is the only state available in this beta. Your permit issue date sets the six-month hold."
+      />
+      <OnboardingForm
+        displayName={me.profile?.display_name ?? ""}
+        isAdult={Boolean(me.profile?.is_adult || me.learners.length)}
+      />
     </Shell>
   );
 }

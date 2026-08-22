@@ -14,10 +14,21 @@ export async function signUp(page: Page, role: "learner" | "adult", name: string
   return email;
 }
 
-export async function createLearner(browser: Browser, name = "Jordan Learner"): Promise<{ ctx: BrowserContext; page: Page; email: string }> {
-  const ctx = await browser.newContext({ ...(await mobile()), permissions: ["geolocation"], geolocation: { latitude: 37.7749, longitude: -122.4194 } });
+export async function createLearner(
+  browser: Browser,
+  name = "Jordan Learner",
+): Promise<{ ctx: BrowserContext; page: Page; email: string }> {
+  const ctx = await browser.newContext({
+    ...(await mobile()),
+    permissions: ["geolocation"],
+    geolocation: { latitude: 37.7749, longitude: -122.4194 },
+  });
   const page = await ctx.newPage();
-  await page.addInitScript(() => { localStorage.setItem("ldp_sim", "1"); localStorage.setItem("ldp_sim_speed_ms", "150"); localStorage.setItem("ldp_sim_duration", "90"); });
+  await page.addInitScript(() => {
+    localStorage.setItem("ldp_sim", "1");
+    localStorage.setItem("ldp_sim_speed_ms", "150");
+    localStorage.setItem("ldp_sim_duration", "90");
+  });
   const email = await signUp(page, "learner", name);
   await expect(page.getByRole("heading", { name: "Your permit profile" })).toBeVisible();
   await page.getByLabel("Permit issue date").fill("2026-03-01");
@@ -34,7 +45,11 @@ export async function inviteLink(learner: Page): Promise<string> {
   return link as string;
 }
 
-export async function createAdult(browser: Browser, link: string, name = "Sam Parent"): Promise<{ ctx: BrowserContext; page: Page; email: string }> {
+export async function createAdult(
+  browser: Browser,
+  link: string,
+  name = "Sam Parent",
+): Promise<{ ctx: BrowserContext; page: Page; email: string }> {
   const ctx = await browser.newContext(await mobile());
   const page = await ctx.newPage();
   await page.goto(link);

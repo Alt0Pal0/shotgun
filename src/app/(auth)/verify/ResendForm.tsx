@@ -10,10 +10,29 @@ export function ResendForm({ email, next }: { email?: string; next?: string }) {
   return (
     <form action={action} className="space-y-3">
       <input type="hidden" name="email" value={email ?? ""} />
-      {state.sent && <Alert tone="success">Verification email sent.{state.devVerifyUrl && <> <Link className="underline" href={`${state.devVerifyUrl}${next ? `&next=${encodeURIComponent(next)}` : ""}`}>Verify now (local)</Link></>}</Alert>}
+      {state.sent && (
+        <Alert tone="success">
+          Verification email sent.
+          {state.devVerifyUrl && (
+            <>
+              {" "}
+              <Link
+                className="underline"
+                href={`${state.devVerifyUrl}${next ? `&next=${encodeURIComponent(next)}` : ""}`}
+              >
+                Verify now (local)
+              </Link>
+            </>
+          )}
+        </Alert>
+      )}
       {state.error && <Alert tone="error">{state.error}</Alert>}
-      <Button type="submit" variant="secondary" block loading={pending}>Resend verification email</Button>
-      <Button type="button" variant="ghost" block onClick={() => window.location.reload()}>I&apos;ve verified — refresh</Button>
+      <Button type="submit" variant="secondary" block loading={pending}>
+        Resend verification email
+      </Button>
+      <Button type="button" variant="ghost" block onClick={() => window.location.reload()}>
+        I&apos;ve verified — refresh
+      </Button>
     </form>
   );
 }

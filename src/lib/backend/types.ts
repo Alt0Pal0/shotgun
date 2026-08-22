@@ -1,10 +1,22 @@
-export interface SessionUser { id: string; email: string; emailVerified: boolean }
-
-export class AppError extends Error {
-  constructor(public code: string, message: string, public status = 400, public hint?: string) { super(message); }
+export interface SessionUser {
+  id: string;
+  email: string;
+  emailVerified: boolean;
 }
 
-export type AuthResult = { ok: true; needsVerification?: boolean; devVerifyUrl?: string } | { ok: false; error: string };
+export class AppError extends Error {
+  constructor(
+    public code: string,
+    message: string,
+    public status = 400,
+    public hint?: string,
+  ) {
+    super(message);
+  }
+}
+
+export type AuthResult =
+  { ok: true; needsVerification?: boolean; devVerifyUrl?: string } | { ok: false; error: string };
 
 /**
  * Backend boundary. Every data operation is an `app.*` RPC executed under the caller's RLS context.
@@ -19,11 +31,15 @@ export interface Backend {
   serviceRpc<T = unknown>(fn: string, args?: Record<string, unknown>): Promise<T>;
   /** Read raw location samples for a session (server-side route processing). Service role. */
   serviceSamples(sessionId: string): Promise<import("@/lib/gps").LocationSample[]>;
-  signUp(input: { email: string; password: string; displayName: string; role: "learner" | "adult" }): Promise<AuthResult>;
+  signUp(input: {
+    email: string;
+    password: string;
+    displayName: string;
+    role: "learner" | "adult";
+  }): Promise<AuthResult>;
   signIn(input: { email: string; password: string }): Promise<AuthResult>;
   signOut(): Promise<void>;
   resendVerification(email: string): Promise<AuthResult>;
   requestPasswordReset(email: string): Promise<AuthResult>;
   updatePassword(newPassword: string): Promise<AuthResult>;
 }
-

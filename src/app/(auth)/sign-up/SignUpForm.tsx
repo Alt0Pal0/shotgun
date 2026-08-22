@@ -9,6 +9,9 @@ import { BETA_TERMS_PLACEHOLDER, PRIVACY_COPY } from "@/lib/copy";
 export function SignUpForm({ defaultRole, next }: { defaultRole: "learner" | "adult"; next?: string }) {
   const [state, action, pending] = useActionState<AuthState, FormData>(signUpAction, {});
   const [role, setRole] = useState(defaultRole);
+  const [form, setForm] = useState({ displayName: "", email: "", password: "", ageConfirmed: false });
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setForm({ ...form, [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value });
   return (
     <form action={action} className="space-y-4">
       {next && <input type="hidden" name="next" value={next} />}
@@ -16,19 +19,68 @@ export function SignUpForm({ defaultRole, next }: { defaultRole: "learner" | "ad
         <legend className="mb-2 text-sm font-medium">I am a…</legend>
         <div className="grid grid-cols-2 gap-2">
           {(["learner", "adult"] as const).map((r) => (
-            <label key={r} className={`tap flex cursor-pointer items-center justify-center rounded-xl border p-3 text-sm font-semibold ${role === r ? "border-accent bg-accent/10 text-accent" : "border-border bg-surface-2"}`}>
-              <input type="radio" name="role" value={r} checked={role === r} onChange={() => setRole(r)} className="sr-only" />
+            <label
+              key={r}
+              className={`tap flex cursor-pointer items-center justify-center rounded-xl border p-3 text-sm font-semibold ${role === r ? "border-accent bg-accent/10 text-accent" : "border-border bg-surface-2"}`}
+            >
+              <input
+                type="radio"
+                name="role"
+                value={r}
+                checked={role === r}
+                onChange={() => setRole(r)}
+                className="sr-only"
+              />
               {r === "learner" ? "Learner driver" : "Parent / supervisor"}
             </label>
           ))}
         </div>
       </fieldset>
-      <Input label="Your name" name="displayName" autoComplete="name" required maxLength={60} />
-      <Input label="Email" name="email" type="email" autoComplete="email" required />
-      <Input label="Password" name="password" type="password" autoComplete="new-password" required minLength={8} hint="At least 8 characters" />
-      <Checkbox name="ageConfirmed" required label="I am 13 or older" hint={role === "learner" ? "Learners under 18 must link a parent or supervising adult before an approved drive can count." : undefined} />
+      <Input
+        label="Your name"
+        name="displayName"
+        autoComplete="name"
+        required
+        maxLength={60}
+        value={form.displayName}
+        onChange={set("displayName")}
+      />
+      <Input
+        label="Email"
+        name="email"
+        type="email"
+        autoComplete="email"
+        required
+        value={form.email}
+        onChange={set("email")}
+      />
+      <Input
+        label="Password"
+        name="password"
+        type="password"
+        autoComplete="new-password"
+        required
+        minLength={8}
+        hint="At least 8 characters"
+        value={form.password}
+        onChange={set("password")}
+      />
+      <Checkbox
+        name="ageConfirmed"
+        required
+        label="I am 13 or older"
+        checked={form.ageConfirmed}
+        onChange={set("ageConfirmed")}
+        hint={
+          role === "learner"
+            ? "Learners under 18 must link a parent or supervising adult before an approved drive can count."
+            : undefined
+        }
+      />
       {state.error && <Alert tone="error">{state.error}</Alert>}
-      <Button type="submit" size="lg" block loading={pending}>Create account</Button>
+      <Button type="submit" size="lg" block loading={pending}>
+        Create account
+      </Button>
       <p className="text-xs text-muted">{PRIVACY_COPY}</p>
       <p className="text-xs text-muted">{BETA_TERMS_PLACEHOLDER}</p>
     </form>

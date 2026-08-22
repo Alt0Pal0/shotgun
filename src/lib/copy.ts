@@ -5,7 +5,8 @@ export const ATTESTATION_TEXT =
 export const SAFETY_LOCK_COPY = {
   title: "Drive in progress",
   body: "Put your phone away and focus on driving. The app unlocks when you park.",
-  limits: "This app locks only its own screen. It cannot lock your phone or block other apps. We recommend enabling your phone's Driving Focus or Driving Mode before you start.",
+  limits:
+    "This app locks only its own screen. It cannot lock your phone or block other apps. We recommend enabling your phone's Driving Focus or Driving Mode before you start.",
 };
 
 export const GPS_LIMITS_COPY =
@@ -17,4 +18,5 @@ export const PRIVACY_COPY =
 export const NOT_LEGAL_COPY =
   "This report is informational, generated from family-approved records, and does not replace official California DMV records, the signed permit, or a driving-school certificate.";
 
-export const BETA_TERMS_PLACEHOLDER = "Private beta. Terms of use and privacy policy: placeholder pending legal review.";
+export const BETA_TERMS_PLACEHOLDER =
+  "Private beta. Terms of use and privacy policy: placeholder pending legal review.";

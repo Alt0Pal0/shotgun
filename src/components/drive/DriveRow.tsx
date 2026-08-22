@@ -12,7 +12,12 @@ export function DriveRow({ s, tz, href }: { s: SessionBrief; tz?: string; href?:
           <span className="text-sm font-semibold">{fmtDate(s.started_at, tz)}</span>
           <StatusChip status={s.status} />
         </div>
-        <p className="mt-1 numeral text-sm">{fmtDuration(minutes)} · {s.evidence_type === "GPS" ? fmtDistance(s.distance_meters) : "no route"}{s.credited_night_minutes || s.proposed_night_minutes ? ` · ${s.credited_night_minutes || s.proposed_night_minutes} night min` : ""}</p>
+        <p className="mt-1 numeral text-sm">
+          {fmtDuration(minutes)} · {s.evidence_type === "GPS" ? fmtDistance(s.distance_meters) : "no route"}
+          {s.credited_night_minutes || s.proposed_night_minutes
+            ? ` · ${s.credited_night_minutes || s.proposed_night_minutes} night min`
+            : ""}
+        </p>
         <div className="mt-1 flex flex-wrap gap-1">
           <EvidenceChip evidence={s.evidence_type} sessionType={s.session_type} />
           {s.evidence_type === "GPS" && <QualityChip quality={s.gps_quality} />}

@@ -3,10 +3,16 @@ import { redirect } from "next/navigation";
 import { getBackend, type Backend, type SessionUser } from "@/lib/backend";
 import type { Me, MyLive } from "@/lib/types";
 
-export interface Ctx { backend: Backend; user: SessionUser; me: Me }
+export interface Ctx {
+  backend: Backend;
+  user: SessionUser;
+  me: Me;
+}
 
 /** Server-side guard for pages. Redirects unauthenticated users, unverified users, and enforces the learner safety lock. */
-export async function requireUser(opts: { allowUnverified?: boolean; enforceLock?: boolean; requireTrack?: boolean } = {}): Promise<Ctx> {
+export async function requireUser(
+  opts: { allowUnverified?: boolean; enforceLock?: boolean; requireTrack?: boolean } = {},
+): Promise<Ctx> {
   const backend = await getBackend();
   const user = await backend.getUser();
   if (!user) redirect("/sign-in");

@@ -1,11 +1,52 @@
 {
-  "jurisdiction": "US-IL", "version": "fixture-1", "effective_from": "2026-01-01", "display_name": "Illinois (architecture fixture)",
+  "jurisdiction": "US-IL",
+  "version": "fixture-1",
+  "effective_from": "2026-01-01",
+  "display_name": "Illinois (architecture fixture)",
   "requirements": [
-    {"key": "supervised_total", "type": "duration_total", "label": "Supervised practice", "target_minutes": 3000, "eligible_session_types": ["FAMILY_SUPERVISED"]},
-    {"key": "night_subset", "type": "duration_subset", "label": "Night practice", "target_minutes": 600, "parent_requirement": "supervised_total", "evidence_field": "night_minutes"},
-    {"key": "permit_hold", "type": "waiting_period", "label": "Permit hold", "target_months": 9, "start_field": "permit_issue_date"},
-    {"key": "driver_education", "type": "document_or_attestation", "label": "Approved driver education course", "evidence_key": "driver_ed_certificate"},
-    {"key": "classroom_hours", "type": "duration_total", "label": "Classroom instruction", "target_minutes": 1800, "eligible_session_types": ["PROFESSIONAL_INSTRUCTION"], "category": "classroom"},
-    {"key": "btw_hours", "type": "duration_total", "label": "Behind-the-wheel instruction", "target_minutes": 360, "eligible_session_types": ["PROFESSIONAL_INSTRUCTION"], "category": "driving"}
+    {
+      "key": "supervised_total",
+      "type": "duration_total",
+      "label": "Supervised practice",
+      "target_minutes": 3000,
+      "eligible_session_types": ["FAMILY_SUPERVISED"]
+    },
+    {
+      "key": "night_subset",
+      "type": "duration_subset",
+      "label": "Night practice",
+      "target_minutes": 600,
+      "parent_requirement": "supervised_total",
+      "evidence_field": "night_minutes"
+    },
+    {
+      "key": "permit_hold",
+      "type": "waiting_period",
+      "label": "Permit hold",
+      "target_months": 9,
+      "start_field": "permit_issue_date"
+    },
+    {
+      "key": "driver_education",
+      "type": "document_or_attestation",
+      "label": "Approved driver education course",
+      "evidence_key": "driver_ed_certificate"
+    },
+    {
+      "key": "classroom_hours",
+      "type": "duration_total",
+      "label": "Classroom instruction",
+      "target_minutes": 1800,
+      "eligible_session_types": ["PROFESSIONAL_INSTRUCTION"],
+      "category": "classroom"
+    },
+    {
+      "key": "btw_hours",
+      "type": "duration_total",
+      "label": "Behind-the-wheel instruction",
+      "target_minutes": 360,
+      "eligible_session_types": ["PROFESSIONAL_INSTRUCTION"],
+      "category": "driving"
+    }
   ]
 }

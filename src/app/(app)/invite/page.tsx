@@ -6,7 +6,11 @@ export default async function InvitePage() {
   const { me } = await requireUser({ requireTrack: true });
   return (
     <>
-      <PageHeader eyebrow="Connect" title="Invite a parent or supervisor" subtitle="Links are single-use and expire after 7 days. You can revoke one any time." />
+      <PageHeader
+        eyebrow="Connect"
+        title="Invite a parent or supervisor"
+        subtitle="Links are single-use and expire after 7 days. You can revoke one any time."
+      />
       <InviteManager adults={me.adults} invitations={me.invitations} />
     </>
   );

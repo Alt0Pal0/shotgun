@@ -8,6 +8,13 @@ import { InstructorReport } from "./InstructorReport";
 
 export async function renderInstructorPdf(model: ReportModel, now = new Date()): Promise<Buffer> {
   if (!model.track || !model.ruleset) throw new Error("Learner has no permit profile");
-  const evaluation = evaluate({ config: parseRuleset(model.ruleset.config), contributions: model.contributions, fields: { permit_issue_date: model.track.permit_issue_date }, now });
-  return renderToBuffer(createElement(InstructorReport, { model, evaluation, generatedAt: now }) as unknown as ReactElement<DocumentProps>);
+  const evaluation = evaluate({
+    config: parseRuleset(model.ruleset.config),
+    contributions: model.contributions,
+    fields: { permit_issue_date: model.track.permit_issue_date },
+    now,
+  });
+  return renderToBuffer(
+    createElement(InstructorReport, { model, evaluation, generatedAt: now }) as unknown as ReactElement<DocumentProps>,
+  );
 }

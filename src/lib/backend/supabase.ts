@@ -18,7 +18,11 @@ async function userClient(): Promise<SupabaseClient> {
     cookies: {
       getAll: () => cookieStore.getAll(),
       setAll: (toSet) => {
-        try { for (const { name, value, options } of toSet) cookieStore.set(name, value, options); } catch { /* server component: handled by proxy refresh */ }
+        try {
+          for (const { name, value, options } of toSet) cookieStore.set(name, value, options);
+        } catch {
+          /* server component: handled by proxy refresh */
+        }
       },
     },
   });
@@ -26,10 +30,14 @@ async function userClient(): Promise<SupabaseClient> {
 
 function serviceClient(): SupabaseClient {
   // Service role key is only ever read on the server; it is never bundled to the browser.
-  return createClient(env("NEXT_PUBLIC_SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"), { auth: { persistSession: false, autoRefreshToken: false } });
+  return createClient(env("NEXT_PUBLIC_SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"), {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
 
-function appUrl(): string { return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"; }
+function appUrl(): string {
+  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+}
 
 export const supabaseBackend: Backend = {
   mode: "supabase",
@@ -51,14 +59,21 @@ export const supabaseBackend: Backend = {
     return data as T;
   },
   async serviceSamples(sessionId: string): Promise<LocationSample[]> {
-    const { data, error } = await serviceClient().from("location_samples")
-      .select("sequence_no, recorded_at, latitude, longitude, accuracy_m, speed_mps, heading_deg").eq("session_id", sessionId).order("sequence_no");
+    const { data, error } = await serviceClient()
+      .from("location_samples")
+      .select("sequence_no, recorded_at, latitude, longitude, accuracy_m, speed_mps, heading_deg")
+      .eq("session_id", sessionId)
+      .order("sequence_no");
     if (error) throw toAppError(error);
     return (data ?? []) as LocationSample[];
   },
   async signUp({ email, password, displayName, role }): Promise<AuthResult> {
     const sb = await userClient();
-    const { error } = await sb.auth.signUp({ email, password, options: { data: { display_name: displayName, role }, emailRedirectTo: `${appUrl()}/auth/callback` } });
+    const { error } = await sb.auth.signUp({
+      email,
+      password,
+      options: { data: { display_name: displayName, role }, emailRedirectTo: `${appUrl()}/auth/callback` },
+    });
     if (error) return { ok: false, error: error.message };
     return { ok: true, needsVerification: true };
   },
@@ -68,15 +83,24 @@ export const supabaseBackend: Backend = {
     if (error) return { ok: false, error: error.message };
     return { ok: true };
   },
-  async signOut() { const sb = await userClient(); await sb.auth.signOut(); },
+  async signOut() {
+    const sb = await userClient();
+    await sb.auth.signOut();
+  },
   async resendVerification(email): Promise<AuthResult> {
     const sb = await userClient();
-    const { error } = await sb.auth.resend({ type: "signup", email, options: { emailRedirectTo: `${appUrl()}/auth/callback` } });
+    const { error } = await sb.auth.resend({
+      type: "signup",
+      email,
+      options: { emailRedirectTo: `${appUrl()}/auth/callback` },
+    });
     return error ? { ok: false, error: error.message } : { ok: true, needsVerification: true };
   },
   async requestPasswordReset(email): Promise<AuthResult> {
     const sb = await userClient();
-    const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: `${appUrl()}/auth/callback?next=/reset-password` });
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: `${appUrl()}/auth/callback?next=/reset-password`,
+    });
     return error ? { ok: false, error: error.message } : { ok: true };
   },
   async updatePassword(newPassword): Promise<AuthResult> {

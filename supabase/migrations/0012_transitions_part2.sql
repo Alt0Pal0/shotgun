@@ -75,7 +75,7 @@ begin
     where session_id = p_session and device_id = p_device;
 
   -- Throttle: publish live state at most every 5 s, but always publish status flips and keep counters exact.
-  if v_live.session_id is null or v_now - v_live.updated_at >= interval '5 seconds' or v_status <> v_s.status or v_inserted = 0 then
+  if v_live.session_id is null or v_now - v_live.updated_at >= interval '5 seconds' or v_status <> v_s.status or v_inserted = 0 or v_quality is distinct from v_live.gps_quality then
     update public.live_session_state set
       latest_latitude = coalesce(round(v_lat::numeric, 5)::double precision, latest_latitude),
       latest_longitude = coalesce(round(v_lng::numeric, 5)::double precision, latest_longitude),

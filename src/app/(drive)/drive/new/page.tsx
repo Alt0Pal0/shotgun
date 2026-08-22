@@ -12,8 +12,16 @@ export default async function NewDrivePage() {
   const skills = await backend.rpc<Skill[]>("skills_list");
   return (
     <>
-      <PageHeader eyebrow="Pre-drive" title="Ready to practice?" subtitle="Complete this while parked. Your supervising adult confirms on their phone, then the app locks." />
-      <PreDriveForm adults={adults.map((a) => ({ id: a.adult.id, name: a.adult.display_name }))} vehicles={me.vehicles} skills={skills} />
+      <PageHeader
+        eyebrow="Pre-drive"
+        title="Ready to practice?"
+        subtitle="Complete this while parked. Your supervising adult confirms on their phone, then the app locks."
+      />
+      <PreDriveForm
+        adults={adults.map((a) => ({ id: a.adult.id, name: a.adult.display_name }))}
+        vehicles={me.vehicles}
+        skills={skills}
+      />
     </>
   );
 }
