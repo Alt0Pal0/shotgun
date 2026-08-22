@@ -1,0 +1,9 @@
+{
+  "jurisdiction": "US-PA", "version": "fixture-1", "effective_from": "2026-01-01", "display_name": "Pennsylvania (architecture fixture)",
+  "requirements": [
+    {"key": "supervised_total", "type": "duration_total", "label": "Supervised practice", "target_minutes": 3900, "eligible_session_types": ["FAMILY_SUPERVISED"]},
+    {"key": "night_subset", "type": "duration_subset", "label": "Night practice", "target_minutes": 600, "parent_requirement": "supervised_total", "evidence_field": "night_minutes"},
+    {"key": "poor_weather_subset", "type": "duration_subset", "label": "Poor-weather practice", "target_minutes": 300, "parent_requirement": "supervised_total", "evidence_field": "poor_weather_minutes"},
+    {"key": "permit_hold", "type": "waiting_period", "label": "Permit hold", "target_months": 6, "start_field": "permit_issue_date"}
+  ]
+}

@@ -6,7 +6,18 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "db:reset": "./scripts/db.sh reset ldp_dev",
+    "db:migrate": "./scripts/db.sh migrate ldp_dev",
+    "db:seed": "tsx scripts/seed.ts",
+    "test": "vitest run",
+    "test:unit": "vitest run --project unit",
+    "test:db": "vitest run --project db",
+    "test:e2e": "playwright test",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^2.1.1",
@@ -17,6 +28,7 @@
     "next": "16.3.2",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
     "suncalc": "^2.0.1",
     "zod": "^4.4.3"
   },
@@ -26,6 +38,7 @@
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.6",
+    "@types/google.maps": "^3.65.5",
     "@types/node": "^20",
     "@types/pg": "^8.23.1",
     "@types/react": "^19",

@@ -1,6 +1,6 @@
 import { describe, it, expect, afterAll } from "vitest";
 import { randomUUID } from "node:crypto";
-import { closePool, createUser, expectDenied, linkAdult, makeLearner, registerDevice, rpc, rpcService, sample, select, startActiveSession, type SessionJson } from "./harness";
+import { closePool, expectDenied, linkAdult, makeLearner, registerDevice, rpc, rpcService, sample, select, startActiveSession, type SessionJson } from "./harness";
 
 afterAll(closePool);
 

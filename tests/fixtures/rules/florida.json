@@ -1,0 +1,11 @@
+{
+  "jurisdiction": "US-FL", "version": "fixture-1", "effective_from": "2026-01-01", "display_name": "Florida (architecture fixture)",
+  "requirements": [
+    {"key": "supervised_total", "type": "duration_total", "label": "Supervised practice", "target_minutes": 3000, "eligible_session_types": ["FAMILY_SUPERVISED"]},
+    {"key": "night_subset", "type": "duration_subset", "label": "Night practice", "target_minutes": 600, "parent_requirement": "supervised_total", "evidence_field": "night_minutes"},
+    {"key": "permit_hold", "type": "waiting_period", "label": "Permit hold", "target_months": 12, "start_field": "permit_issue_date", "until_then_restriction": "daylight_only_first_three_months"},
+    {"key": "daylight_phase", "type": "waiting_period", "label": "Daylight-only phase", "target_months": 3, "start_field": "permit_issue_date", "until_then_restriction": "Driving only during daylight hours"},
+    {"key": "after_phase_window", "type": "restriction", "label": "Time-of-day restriction after phase", "rule": "Permitted one hour after sunset at most", "time_window": {"start": "sunrise", "end": "sunset+60"}},
+    {"key": "tlsae", "type": "document_or_attestation", "label": "Traffic law and substance abuse education", "evidence_key": "tlsae_certificate"}
+  ]
+}
