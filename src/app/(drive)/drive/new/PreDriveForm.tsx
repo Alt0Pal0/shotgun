@@ -34,12 +34,20 @@ export function PreDriveForm({
   const [perm, setPerm] = useState<Perm>("unknown");
   const [battery, setBattery] = useState<string | null>(null);
   const [deviceId, setDeviceId] = useState<string | null>(null);
+  const [standalone, setStandalone] = useState(false);
+  const [simOn, setSimOn] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const sim = process.env.NEXT_PUBLIC_GPS_SIMULATOR === "1";
-  const wakeSupported = typeof navigator !== "undefined" && "wakeLock" in navigator;
+  const [wakeSupported, setWakeSupported] = useState(false);
 
   useEffect(() => {
+    // Capability probes run after hydration (deferred) so server and client markup match.
+    const probe = setTimeout(() => {
+      setStandalone(isStandalonePwa());
+      setSimOn(localStorage.getItem("ldp_sim") === "1");
+      setWakeSupported("wakeLock" in navigator);
+    }, 0);
     ensureDeviceId()
       .then(setDeviceId)
       .catch(() => setErr("Could not register this phone as the recorder"));
@@ -54,6 +62,7 @@ export function PreDriveForm({
       .getBattery?.()
       .then((b) => setBattery(`${Math.round(b.level * 100)}%${b.charging ? " (charging)" : ""}`))
       .catch(() => undefined);
+    return () => clearTimeout(probe);
   }, []);
 
   function requestLocation() {
@@ -177,17 +186,15 @@ export function PreDriveForm({
           )}
           <li>Screen wake lock: {wakeSupported ? "supported" : "not supported — keep the screen on manually"}</li>
           <li>Battery: {battery ?? "unknown"}</li>
-          <li>
-            Installed as app:{" "}
-            {typeof window !== "undefined" && isStandalonePwa() ? "yes" : "no (works in the browser too)"}
-          </li>
+          <li>Installed as app: {standalone ? "yes" : "no (works in the browser too)"}</li>
         </ul>
         {sim && (
           <label className="tap mt-2 flex items-center gap-2 text-xs text-amber">
             <input
               type="checkbox"
-              defaultChecked={typeof window !== "undefined" && localStorage.getItem("ldp_sim") === "1"}
+              checked={simOn}
               onChange={(e) => {
+                setSimOn(e.target.checked);
                 localStorage.setItem("ldp_sim", e.target.checked ? "1" : "0");
                 if (e.target.checked) setPerm("granted");
               }}

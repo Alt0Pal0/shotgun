@@ -36,7 +36,18 @@ export default async function ReviewsPage() {
         </ul>
       ) : (
         <Card>
-          <p className="text-sm text-muted">When a learner submits a drive, it appears here.</p>
+          {me.learners.length ? (
+            <p className="text-sm text-muted">When a learner submits a drive, it appears here.</p>
+          ) : (
+            <div className="space-y-2 text-sm">
+              <p className="font-semibold">No learner linked yet</p>
+              <p className="text-muted">
+                Your learner creates the permit profile on their own account, then taps <strong>Invite an adult</strong>{" "}
+                on their Home screen and shares the link with you. Open that link while signed in to connect.
+              </p>
+              <p className="text-muted">Invitation links are single-use and expire after 7 days.</p>
+            </div>
+          )}
         </Card>
       )}
       {me.learners.length > 0 && (
