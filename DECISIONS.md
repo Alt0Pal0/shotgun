@@ -105,3 +105,16 @@ Format: ambiguity → chosen interpretation → alternatives → reasoning → d
 ## D-017 Google Maps loader (2026-08-22)
 
 - `@googlemaps/js-api-loader` v2 functional API; SVG fallback when no key or load failure, used by automated tests.
+
+## D-018 Neon Postgres instead of Supabase (2026-08-22, owner decision)
+
+- **Change:** Production database is Neon (Vercel-native). The PRD's Supabase recommendation is retained as an
+  optional backend; the default backend is plain PostgreSQL.
+- **Consequences:** Auth is implemented in-app (`app.auth_*`: bcrypt via pgcrypto, server-side sessions, HMAC-signed
+  cookie, email verification/reset tokens, DB-backed rate limits; Resend for email). Realtime becomes 4 s polling on
+  the adult live view (honest staleness indicators remain). RLS, roles (`anon`/`authenticated` via SET ROLE) and all
+  `app.*` functions are unchanged; the connecting database owner is the "service" identity
+  (`app.is_service_role()` = any non-request role). Migrations are tracked in `public.schema_migrations` and can run
+  at boot (`AUTO_MIGRATE=1`, advisory-locked).
+- **Files:** supabase/migrations/0000, 0016; src/lib/backend/postgres.ts; src/lib/email.ts; src/lib/migrate.ts;
+  src/instrumentation.ts.

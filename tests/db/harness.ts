@@ -16,7 +16,7 @@ export interface TestUser {
 export async function createUser(prefix = "u"): Promise<TestUser> {
   const email = `${prefix}-${randomUUID().slice(0, 8)}@example.test`;
   const { rows } = await pool.query<{ id: string }>(
-    "insert into auth.users (email, email_confirmed_at) values ($1, now()) returning id",
+    "insert into auth.users (email, email_confirmed_at, encrypted_password) values ($1, now(), app.auth_hash('correct-horse-battery')) returning id",
     [email],
   );
   return { id: rows[0].id, email };
@@ -62,12 +62,11 @@ export async function as<T>(user: TestUser | null, fn: (c: PoolClient) => Promis
   }
 }
 
-/** Run `fn` as the service role (server-only code paths). */
+/** Run `fn` as the server itself (database owner; no SET ROLE) — the server-only code path. */
 export async function asService<T>(fn: (c: PoolClient) => Promise<T>): Promise<T> {
   const c = await pool.connect();
   try {
     await c.query("begin");
-    await c.query("set local role service_role");
     await c.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify({ role: "service_role" })]);
     const out = await fn(c);
     await c.query("commit");

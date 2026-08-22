@@ -23,7 +23,7 @@ export type AuthResult =
  * Implementations: Supabase (production) and LocalPg (development/tests without Supabase credentials).
  */
 export interface Backend {
-  readonly mode: "supabase" | "local";
+  readonly mode: "supabase" | "postgres";
   getUser(): Promise<SessionUser | null>;
   /** Execute `app.<fn>` as the signed-in user. */
   rpc<T = unknown>(fn: string, args?: Record<string, unknown>): Promise<T>;

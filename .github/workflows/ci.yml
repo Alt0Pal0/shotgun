@@ -18,7 +18,7 @@ jobs:
       PGHOST: localhost
       PGUSER: postgres
       PGPASSWORD: postgres
-      BACKEND_MODE: local
+      BACKEND_MODE: postgres
       NEXT_PUBLIC_GPS_SIMULATOR: "1"
     steps:
       - uses: actions/checkout@v4

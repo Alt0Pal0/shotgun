@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
-# Local database helper (plain PostgreSQL). Usage: scripts/db.sh reset|migrate [dbname]
+# Local database helper. Usage: scripts/db.sh reset|migrate [dbname]
 set -euo pipefail
 CMD=${1:-migrate}; DB=${2:-${LOCAL_DB_NAME:-ldp_dev}}
-PSQL="psql -v ON_ERROR_STOP=1 -q"
 if [ "$CMD" = "reset" ]; then
-  $PSQL -d postgres -c "drop database if exists \"$DB\"" -c "create database \"$DB\""
-  $PSQL -d "$DB" -f supabase/local/00_shim.sql
+  psql -q -v ON_ERROR_STOP=1 -d postgres -c "drop database if exists \"$DB\"" -c "create database \"$DB\""
 fi
-for f in supabase/migrations/*.sql; do
-  echo "applying $f"; $PSQL -d "$DB" -f "$f"
-done
-echo "done: $DB"
+DATABASE_URL="postgres:///$DB" pnpm -s tsx scripts/migrate.ts

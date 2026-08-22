@@ -43,9 +43,14 @@ Supabase/Google/Vercel credentials and real phones (see "Manual steps").
 | E2E (Playwright, Pixel 7 viewport): full two-account loop incl. lock, live, observations, parked end, reflection, approval, totals, history, PDF, route deletion; records/overlap/void/revocation; anonymous/unrelated denial; auth; accessibility | `pnpm test:e2e`                                    | 8 pass  |
 | Production build                                                                                                                                                                                                                                   | `pnpm build`                                       | pass    |
 
+## Deployment (2026-08-22)
+
+- GitHub: https://github.com/Alt0Pal0/shotgun (main). Vercel: https://shotgun-iota.vercel.app — builds green; shows
+  `/setup` until `DATABASE_URL` (Neon) and `AUTH_SECRET` are configured; `AUTO_MIGRATE=1` applies the schema at boot.
+
 ## Known limitations
 
-- Supabase Auth/Realtime/PostGIS, Google Maps, and Vercel were **not exercised against live services** (no credentials).
+- Neon, Resend, Google Maps were **not exercised against live services** (no credentials); Postgres backend verified locally.
   Adapters follow documented APIs; the local backend proves the same SQL/RLS.
 - Real-device GPS, wake lock, backgrounding, and realtime latency are **unverified** (docs/FIELD_TEST_CHECKLIST.md).
 - Voice notes deferred; adult-generated learner invitations deferred (DECISIONS D-007, D-008).

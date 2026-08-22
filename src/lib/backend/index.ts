@@ -4,22 +4,29 @@ import type { Backend } from "./types";
 export type { Backend, SessionUser } from "./types";
 export { AppError } from "./types";
 
-export function backendMode(): "supabase" | "local" {
+/**
+ * Backend selection:
+ *  - "supabase": NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY are set (Supabase Auth/Realtime/PostgREST)
+ *  - "postgres": DATABASE_URL is set (Neon in production, local Postgres in development) — built-in auth, polling
+ *  BACKEND_MODE forces one explicitly.
+ */
+export function backendMode(): "supabase" | "postgres" {
   const forced = process.env.BACKEND_MODE;
-  if (forced === "local" || forced === "supabase") return forced;
-  return process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "supabase" : "local";
+  if (forced === "supabase" || forced === "postgres") return forced;
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return "supabase";
+  return "postgres";
+}
+
+/** True when a usable backend exists for this environment. */
+export function backendConfigured(): boolean {
+  if (backendMode() === "supabase")
+    return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  const hasDb = Boolean(process.env.DATABASE_URL) || process.env.NODE_ENV !== "production";
+  const hasSecret = (process.env.AUTH_SECRET?.length ?? 0) >= 32 || process.env.NODE_ENV !== "production";
+  return hasDb && hasSecret;
 }
 
 export async function getBackend(): Promise<Backend> {
   if (backendMode() === "supabase") return (await import("./supabase")).supabaseBackend;
-  return (await import("./local")).localBackend;
-}
-
-/** True when a usable backend exists: Supabase is configured, or we are in development/test (local Postgres). */
-export function backendConfigured(): boolean {
-  return (
-    backendMode() === "supabase" ||
-    process.env.NODE_ENV !== "production" ||
-    process.env.ALLOW_LOCAL_BACKEND_IN_PROD === "1"
-  );
+  return (await import("./postgres")).postgresBackend;
 }

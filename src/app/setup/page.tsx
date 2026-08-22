@@ -3,43 +3,39 @@ import { backendConfigured } from "@/lib/backend";
 
 export default function SetupPage() {
   if (backendConfigured()) redirect("/");
-  const vars = [
-    "NEXT_PUBLIC_SUPABASE_URL",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-    "SUPABASE_SERVICE_ROLE_KEY (server only)",
-    "NEXT_PUBLIC_APP_URL",
-    "NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY (optional)",
-  ];
+  const hasDb = Boolean(process.env.DATABASE_URL);
+  const hasSecret = (process.env.AUTH_SECRET?.length ?? 0) >= 32;
   return (
     <main id="main" className="mx-auto max-w-md px-5 py-12">
       <p className="text-xs font-semibold uppercase tracking-widest text-accent">Learner Driver Platform</p>
-      <h1 className="mt-2 text-2xl font-bold">Deployment needs a database</h1>
+      <h1 className="mt-2 text-2xl font-bold">Almost there — configuration needed</h1>
       <p className="mt-2 text-sm text-muted">
-        This deployment has no Supabase project configured, so sign-in and data are unavailable. The app is built and
-        healthy; it is waiting on configuration.
+        The app is built and healthy but is missing environment variables. Set them in Vercel → Project → Settings →
+        Environment Variables, then redeploy.
       </p>
-      <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm">
-        <li>
-          Create a Supabase project and enable the <strong>PostGIS</strong> extension.
+      <ul className="mt-4 space-y-2 text-sm">
+        <li className={hasDb ? "text-success" : "text-rose"}>
+          {hasDb ? "✓" : "✗"} <code>DATABASE_URL</code> — Neon Postgres (Vercel → Storage → Neon creates it
+          automatically)
         </li>
-        <li>
-          Apply <code>supabase/migrations/*.sql</code> in order; add <code>app</code> to API → Exposed schemas.
+        <li className={hasSecret ? "text-success" : "text-rose"}>
+          {hasSecret ? "✓" : "✗"} <code>AUTH_SECRET</code> — 32+ random characters (<code>openssl rand -hex 32</code>)
         </li>
-        <li>
-          Auth → URL configuration: add <code>/auth/callback</code> on this domain to redirect URLs.
+        <li className="text-muted">
+          • <code>AUTO_MIGRATE=1</code> — applies the database schema on first boot (recommended)
         </li>
-        <li>
-          Set these environment variables in Vercel and redeploy:
-          <ul className="mt-1 list-disc pl-5 text-xs text-muted">
-            {vars.map((v) => (
-              <li key={v}>
-                <code>{v}</code>
-              </li>
-            ))}
-          </ul>
+        <li className="text-muted">
+          • <code>NEXT_PUBLIC_APP_URL</code> — this site&apos;s https URL (used in invitation and email links)
         </li>
-      </ol>
-      <p className="mt-4 text-xs text-muted">Full steps: README.md → “Supabase setup” and docs/RELEASE_CHECKLIST.md.</p>
+        <li className="text-muted">
+          • <code>RESEND_API_KEY</code> for verification emails, or <code>ALLOW_INSECURE_VERIFY_LINK=1</code> to show
+          links on screen during the closed beta
+        </li>
+        <li className="text-muted">
+          • <code>NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY</code> (optional; an offline map renders without it)
+        </li>
+      </ul>
+      <p className="mt-4 text-xs text-muted">Details: README.md → “Deploy on Vercel + Neon”.</p>
     </main>
   );
 }

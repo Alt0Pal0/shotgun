@@ -11,7 +11,7 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "db:reset": "./scripts/db.sh reset ldp_dev",
-    "db:migrate": "./scripts/db.sh migrate ldp_dev",
+    "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
     "test": "vitest run",
     "test:unit": "vitest run --project unit",

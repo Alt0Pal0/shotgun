@@ -1,6 +1,8 @@
 -- 0011 State machine part 1: license tracks, session request/accept/start, samples, recorder status, end
 create or replace function app.is_service_role() returns boolean language sql stable as $$
-  select coalesce(auth.role() = 'service_role', false) or current_user in ('service_role', 'postgres')
+  -- Request roles are only ever anon/authenticated; any other current_user is the server itself (Neon owner,
+  -- Supabase service_role, local superuser) and may run server-only functions.
+  select coalesce(auth.role() = 'service_role', false) or current_user not in ('anon', 'authenticated')
 $$;
 
 create or replace function app.haversine_m(lat1 double precision, lon1 double precision, lat2 double precision, lon2 double precision)

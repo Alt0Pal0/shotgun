@@ -20,7 +20,7 @@ export function ResendForm({ email, next }: { email?: string; next?: string }) {
                 className="underline"
                 href={`${state.devVerifyUrl}${next ? `&next=${encodeURIComponent(next)}` : ""}`}
               >
-                Verify now (local)
+                Verify now
               </Link>
             </>
           )}

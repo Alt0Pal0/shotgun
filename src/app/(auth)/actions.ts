@@ -68,3 +68,15 @@ export async function resetAction(_: AuthState, form: FormData): Promise<AuthSta
   if (!r.ok) return { error: r.error };
   redirect("/");
 }
+
+export async function resetWithTokenAction(_: AuthState, form: FormData): Promise<AuthState> {
+  const pw = String(form.get("password") ?? "");
+  const token = String(form.get("token") ?? "");
+  if (pw.length < 8) return { error: "Password must be at least 8 characters" };
+  const { backendMode } = await import("@/lib/backend");
+  if (backendMode() !== "postgres") return { error: "Not available" };
+  const { consumeResetToken } = await import("@/lib/backend/postgres");
+  const ok = await consumeResetToken(token, pw).catch(() => false);
+  if (!ok) return { error: "This reset link is invalid or has expired. Request a new one." };
+  redirect("/");
+}

@@ -1,8 +1,8 @@
 /**
- * Local demo seed (plain Postgres via the auth shim). Creates a verified learner + adult pair with one approved GPS drive,
+ * Demo seed for the postgres backend (local or Neon). Creates a verified learner + adult pair with one approved GPS drive,
  * one approved manual drive, one professional lesson, and one drive awaiting review.
  *   learner@demo.test / demo-password      adult@demo.test / demo-password
- * Never run against production: it writes directly to auth.users through the local shim.
+ * Intended for development databases; it writes demo accounts directly into auth.users.
  */
 import { randomUUID } from "node:crypto";
 import { Pool } from "pg";
@@ -24,7 +24,7 @@ async function asUser<T>(
   const c = await pool.connect();
   try {
     await c.query("begin");
-    await c.query(`set local role ${role}`);
+    if (role === "authenticated") await c.query("set local role authenticated");
     await c.query("select set_config('request.jwt.claims', $1, true)", [
       JSON.stringify(uid ? { sub: uid, role } : { role }),
     ]);
@@ -43,7 +43,7 @@ const rpc = <T>(uid: string, fn: string, args: unknown[]) =>
 
 async function user(email: string, name: string, role: string): Promise<string> {
   const { rows } = await pool.query(
-    `insert into auth.users (email, email_confirmed_at, raw_user_meta_data) values ($1, now(), jsonb_build_object('display_name', $2::text, 'role', $3::text, 'password_hash', crypt('demo-password', gen_salt('bf'))))
+    `insert into auth.users (email, email_confirmed_at, encrypted_password, raw_user_meta_data) values ($1, now(), app.auth_hash('demo-password'), jsonb_build_object('display_name', $2::text, 'role', $3::text))
      on conflict (email) do update set email = excluded.email returning id`,
     [email, name, role],
   );

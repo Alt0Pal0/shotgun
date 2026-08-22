@@ -17,11 +17,12 @@ Browser (Next.js 16 App Router PWA, React 19, Tailwind 4)
   ├─ Learner: pre-drive → waiting → SAFETY-LOCKED active screen (status + elapsed only) → summary → reflection
   ├─ Adult:   accept (4 confirmations) → LIVE VIEW (map, location age, GPS/recorder/connectivity, tap observations, end)
   ├─ Recorder (learner phone): Geolocation watchPosition → IndexedDB buffer → idempotent 15 s batches (offline-safe)
-  └─ Realtime: Supabase postgres_changes on live_session_state / drive_observations (RLS-authorized) + polling fallback
+  └─ Live updates: 4 s polling (postgres backend) or Supabase Realtime postgres_changes + polling fallback
 Next.js route handlers (/api/**) — Zod validation → Backend adapter → app.* RPC
-  ├─ Backend "supabase": @supabase/ssr user client (RLS) + service-role client (server only: route processing, PDF)
-  └─ Backend "local":    plain Postgres + signed dev cookie (development/CI only; refuses to run in production)
-Postgres (Supabase): 15 migrations — tables, RLS on every table, SECURITY DEFINER state-machine functions
+  ├─ Backend "postgres" (default; Neon in production, local Postgres in dev): SET ROLE authenticated + RLS per request,
+  │    built-in email/password auth (bcrypt, server-side sessions, signed cookie, verify/reset tokens via Resend)
+  └─ Backend "supabase" (optional): @supabase/ssr user client (RLS) + service-role client
+Postgres (Neon or Supabase): 17 migrations — tables, RLS on every table, SECURITY DEFINER state-machine functions
   (request/accept/start/ingest_samples/end/record_route_processing/add_observation/save_reflection/review_session/
    create_manual_session/delete_route…), SECURITY INVOKER read models (me, session_detail, live_view, lock_state,
    progress_model, report_model…), versioned jurisdiction_rule_sets, requirement_contributions, audit_events.
@@ -42,7 +43,7 @@ Key invariants (all enforced in SQL, not UI):
 
 - Node 22+ (developed on 25), pnpm 10, PostgreSQL 16+ running locally (`pg_isready`), `psql` on PATH.
 - PostGIS is optional locally (Supabase has it). Without it, geography columns are skipped — see `DECISIONS.md` D-003.
-- No Supabase/Google/Vercel credentials are needed for local development: the app runs in **local backend mode**.
+- No cloud credentials are needed for local development: the postgres backend runs against your local database.
 
 ## Installation & first run
 
@@ -54,24 +55,45 @@ pnpm db:seed                          # optional demo family: learner@demo.test 
 pnpm dev                              # http://localhost:3000
 ```
 
-Local mode details: sign-up shows a "Verify this account now" link instead of sending email; sessions use a signed
-`ldp_local_session` cookie; the GPS simulator is enabled when `NEXT_PUBLIC_GPS_SIMULATOR=1` and the "Use GPS
-simulator" box is ticked on the pre-drive screen (or `?sim=1`). Two accounts = two browsers/profiles.
+Development details: without `RESEND_API_KEY`, sign-up shows a "Verify this account now" link instead of sending
+email; sessions use a signed `ldp_session` cookie backed by `auth.sessions`; the GPS simulator is enabled when
+`NEXT_PUBLIC_GPS_SIMULATOR=1` and the "Use GPS simulator" box is ticked on the pre-drive screen (or `?sim=1`).
+Two accounts = two browsers/profiles.
 
 ## Environment variables
 
-| Variable                                                    | Where            | Purpose                                                                              |
-| ----------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------ |
-| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | browser + server | Supabase Auth/Realtime/PostgREST. Presence of both switches to the Supabase backend. |
-| `SUPABASE_SERVICE_ROLE_KEY`                                 | server only      | Route processing and report model. Never `NEXT_PUBLIC_`.                             |
-| `DATABASE_URL`, `LOCAL_DB_NAME`                             | local/CI         | Migrations, DB tests, local backend.                                                 |
-| `NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY`                       | browser          | Map display. Without it an offline SVG map renders.                                  |
-| `NEXT_PUBLIC_APP_URL`                                       | server           | Absolute links (invitations, auth redirects).                                        |
-| `NEXT_PUBLIC_GPS_SIMULATOR`                                 | dev/test only    | Enables the simulated drive. Must be unset in production.                            |
-| `BACKEND_MODE`                                              | optional         | Force `local` or `supabase`.                                                         |
-| `LOCAL_AUTH_SECRET`                                         | local only       | HMAC secret for the dev cookie.                                                      |
+| Variable                                                                                 | Where         | Purpose                                                                                                        |
+| ---------------------------------------------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                                                                           | server        | Neon pooled connection string in production; `postgres:///ldp_dev` locally. Vercel's Neon integration sets it. |
+| `AUTH_SECRET`                                                                            | server        | Session-cookie HMAC secret, ≥ 32 chars. **Required in production.**                                            |
+| `AUTO_MIGRATE`                                                                           | server        | `1` = apply pending migrations at server boot (advisory-locked, idempotent). Recommended on Vercel.            |
+| `NEXT_PUBLIC_APP_URL`                                                                    | server        | Absolute links (invitations, verification/reset emails).                                                       |
+| `RESEND_API_KEY`, `EMAIL_FROM`                                                           | server        | Verification and reset emails.                                                                                 |
+| `ALLOW_INSECURE_VERIFY_LINK`                                                             | server        | `1` shows verification links on screen when no email provider exists (closed beta only).                       |
+| `NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY`                                                    | browser       | Map display. Without it an offline SVG map renders.                                                            |
+| `NEXT_PUBLIC_GPS_SIMULATOR`                                                              | dev/test only | Enables the simulated drive. Must be unset in production.                                                      |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | optional      | Use Supabase (Auth/Realtime) instead of Neon.                                                                  |
+| `BACKEND_MODE`                                                                           | optional      | Force `postgres` or `supabase`.                                                                                |
 
-## Supabase setup (production / preview)
+## Deploy on Vercel + Neon (recommended)
+
+1. Vercel → Project → Storage → **Create Database → Neon** (or connect an existing Neon project). This injects
+   `DATABASE_URL` (pooled). PostGIS is optional: run `create extension postgis;` in the Neon SQL editor _before_ the
+   first boot if you want geography columns; otherwise lat/lng columns are used (DECISIONS D-003).
+2. Settings → Environment Variables (Production + Preview):
+   - `AUTH_SECRET` = `openssl rand -hex 32`
+   - `AUTO_MIGRATE` = `1`
+   - `NEXT_PUBLIC_APP_URL` = `https://<your-domain>`
+   - `RESEND_API_KEY` (+ `EMAIL_FROM`) — or `ALLOW_INSECURE_VERIFY_LINK=1` for the closed beta
+   - `NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY` (optional)
+3. Redeploy. The first request applies all migrations (watch the function logs for `[migrate]`). Alternatively run
+   `DATABASE_URL=<neon url> pnpm db:migrate` from your machine.
+4. Open the site on two phones, create a learner and an adult account, and follow the invitation flow.
+
+Live updates on Neon use 4-second polling (there is no realtime channel); the adult view labels this "Polling" and
+shows "Updated N seconds ago". Realtime push is available only with the Supabase backend.
+
+## Supabase setup (alternative)
 
 1. Create a project. **Enable PostGIS** (Database → Extensions) before migrating.
 2. Apply the schema: paste `supabase/bundle.sql` (all migrations concatenated; regenerate with `pnpm db:bundle`) into
@@ -102,7 +124,8 @@ and the Supabase roles).
 | `pnpm test:e2e`                                      | Playwright (mobile viewport): full two-account loop, records/privacy/revocation, auth, accessibility                                  |
 | `pnpm check`                                         | Everything above plus production build                                                                                                |
 
-DB tests create a fresh `ldp_test` database on each run (`tests/db/global-setup.ts`).
+DB tests create a fresh `ldp_test` database on each run (`tests/db/global-setup.ts`). Migrations are tracked in
+`public.schema_migrations`; `scripts/migrate.ts` and `src/lib/migrate.ts` share the runner.
 
 ## Testing notes
 
@@ -123,8 +146,9 @@ DB tests create a fresh `ldp_test` database on each run (`tests/db/global-setup.
 
 ## Deployment
 
-Vercel (`vercel.json` sets security headers and service-worker caching). Node runtime for the PDF route. Set env vars
-per environment; keep `NEXT_PUBLIC_GPS_SIMULATOR` unset. The local backend throws at import time in production.
+Vercel (`vercel.json` sets security headers and service-worker caching). Node runtime for the PDF route and
+migrations. Keep `NEXT_PUBLIC_GPS_SIMULATOR` unset in production. Until `DATABASE_URL` and `AUTH_SECRET` exist the
+site renders `/setup` with a checklist instead of failing.
 
 ## PWA and GPS limitations (read before the beta)
 
@@ -139,13 +163,14 @@ per environment; keep `NEXT_PUBLIC_GPS_SIMULATOR` unset. The local backend throw
 
 ## Known issues / limitations
 
-- No Supabase, Google Maps, or Vercel credentials were available while building: the Supabase adapter, realtime
-  channel, and Google map layer are implemented against documented APIs but **not verified against live services**.
+- Neon was not reachable while building: the postgres backend is verified against local PostgreSQL 16 (same SQL,
+  roles and RLS). The Supabase adapter/realtime channel and the Google map layer are implemented against documented
+  APIs but **not verified against live services**.
 - Real-device behavior (iOS/Android GPS, wake lock, backgrounding) is **not verified**; see
   `docs/FIELD_TEST_CHECKLIST.md`.
 - Rate limiting relies on Supabase Auth limits plus bounded batch sizes; add an edge rate limit before scaling.
 - Voice notes on observations are deferred (text notes only, post-parking).
-- Local mode stores demo password hashes in `auth.users.raw_user_meta_data` — development only.
+- Rate limiting for auth is database-backed (10 failed sign-ins / 15 min per email; 5 tokens / 15 min).
 
 ## Real-device testing
 

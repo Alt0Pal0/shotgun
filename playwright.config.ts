@@ -19,6 +19,6 @@ export default defineConfig({
     url: "http://localhost:3000/sign-in",
     reuseExistingServer: true,
     timeout: 120_000,
-    env: { BACKEND_MODE: "local", NEXT_PUBLIC_GPS_SIMULATOR: "1" },
+    env: { BACKEND_MODE: "postgres", NEXT_PUBLIC_GPS_SIMULATOR: "1" },
   },
 });
