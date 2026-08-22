@@ -10,6 +10,18 @@ export { AppError } from "./types";
  *  - "postgres": DATABASE_URL is set (Neon in production, local Postgres in development) — built-in auth, polling
  *  BACKEND_MODE forces one explicitly.
  */
+/** Database URL from any of the names the Vercel ⇄ Neon integration may set. Prefers the pooled URL. */
+export function databaseUrl(): string | undefined {
+  return (
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
+    process.env.DATABASE_URL_UNPOOLED ||
+    process.env.POSTGRES_URL_NON_POOLING ||
+    undefined
+  );
+}
+
 export function backendMode(): "supabase" | "postgres" {
   const forced = process.env.BACKEND_MODE;
   if (forced === "supabase" || forced === "postgres") return forced;
@@ -21,7 +33,7 @@ export function backendMode(): "supabase" | "postgres" {
 export function backendConfigured(): boolean {
   if (backendMode() === "supabase")
     return Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-  const hasDb = Boolean(process.env.DATABASE_URL) || process.env.NODE_ENV !== "production";
+  const hasDb = Boolean(databaseUrl()) || process.env.NODE_ENV !== "production";
   const hasSecret = (process.env.AUTH_SECRET?.length ?? 0) >= 32 || process.env.NODE_ENV !== "production";
   return hasDb && hasSecret;
 }

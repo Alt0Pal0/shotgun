@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
-import { backendConfigured } from "@/lib/backend";
+import { backendConfigured, databaseUrl } from "@/lib/backend";
 
 export default function SetupPage() {
   if (backendConfigured()) redirect("/");
-  const hasDb = Boolean(process.env.DATABASE_URL);
+  const hasDb = Boolean(databaseUrl());
   const hasSecret = (process.env.AUTH_SECRET?.length ?? 0) >= 32;
   return (
     <main id="main" className="mx-auto max-w-md px-5 py-12">

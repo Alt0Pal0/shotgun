@@ -11,6 +11,7 @@ import { cookies, headers } from "next/headers";
 import { Pool } from "pg";
 import type { LocationSample } from "@/lib/gps";
 import { appUrl, sendAuthEmail } from "@/lib/email";
+import { databaseUrl } from "./index";
 import { toAppError } from "./errors";
 import { AppError, type AuthResult, type Backend, type SessionUser } from "./types";
 
@@ -30,7 +31,9 @@ declare global {
 }
 function pool(): Pool {
   if (!globalThis.__ldpPool) {
-    const url = process.env.DATABASE_URL;
+    const url =
+      databaseUrl() ??
+      (process.env.NODE_ENV !== "production" ? `postgres:///${process.env.LOCAL_DB_NAME ?? "ldp_dev"}` : undefined);
     if (!url) throw new AppError("CONFIG", "DATABASE_URL is required", 500);
     globalThis.__ldpPool = new Pool({
       connectionString: url,
