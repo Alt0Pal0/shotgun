@@ -24,7 +24,12 @@ export async function sendAuthEmail(to: string, subject: string, link: string, i
         html: `<p>${intro}</p><p><a href="${link}">${link}</a></p><p style="color:#666;font-size:12px">If you did not request this, you can ignore this email.</p>`,
       }),
     });
-    if (!res.ok) throw new Error(`Email delivery failed (${res.status})`);
+    if (!res.ok) {
+      const detail = (await res.json().catch(() => ({}))) as { message?: string };
+      throw new Error(
+        `Email delivery failed (${res.status}${detail.message ? `: ${detail.message}` : ""}). With the default resend.dev sender, Resend only delivers to the account owner until a domain is verified.`,
+      );
+    }
     return { sent: true };
   }
   if (process.env.NODE_ENV !== "production" || process.env.ALLOW_INSECURE_VERIFY_LINK === "1")

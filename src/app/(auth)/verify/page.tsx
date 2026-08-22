@@ -7,7 +7,7 @@ import { ResendForm } from "./ResendForm";
 export default async function VerifyPage({
   searchParams,
 }: {
-  searchParams: Promise<{ dev?: string; next?: string; invalid?: string }>;
+  searchParams: Promise<{ dev?: string; next?: string; invalid?: string; emailError?: string }>;
 }) {
   const sp = await searchParams;
   const backend = await getBackend();
