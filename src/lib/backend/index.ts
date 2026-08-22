@@ -14,3 +14,12 @@ export async function getBackend(): Promise<Backend> {
   if (backendMode() === "supabase") return (await import("./supabase")).supabaseBackend;
   return (await import("./local")).localBackend;
 }
+
+/** True when a usable backend exists: Supabase is configured, or we are in development/test (local Postgres). */
+export function backendConfigured(): boolean {
+  return (
+    backendMode() === "supabase" ||
+    process.env.NODE_ENV !== "production" ||
+    process.env.ALLOW_LOCAL_BACKEND_IN_PROD === "1"
+  );
+}

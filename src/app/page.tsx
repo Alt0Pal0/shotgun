@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
-import { getBackend } from "@/lib/backend";
+import { backendConfigured, getBackend } from "@/lib/backend";
 import type { Me } from "@/lib/types";
 
 export default async function Index() {
+  if (!backendConfigured()) redirect("/setup");
   const backend = await getBackend();
   const user = await backend.getUser();
   if (!user) redirect("/sign-in");

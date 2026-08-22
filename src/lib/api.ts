@@ -1,7 +1,7 @@
 import "server-only";
 import { NextResponse } from "next/server";
 import type { ZodType } from "zod";
-import { AppError, getBackend, type Backend, type SessionUser } from "@/lib/backend";
+import { AppError, backendConfigured, getBackend, type Backend, type SessionUser } from "@/lib/backend";
 
 export type Handler = (ctx: {
   req: Request;
@@ -14,6 +14,7 @@ export type Handler = (ctx: {
 export function withAuth(handler: Handler, opts: { allowUnverified?: boolean } = {}) {
   return async (req: Request, ctx: { params: Promise<Record<string, string>> }): Promise<Response> => {
     try {
+      if (!backendConfigured()) throw new AppError("CONFIG", "Backend not configured. See /setup.", 503);
       const backend = await getBackend();
       const user = await backend.getUser();
       if (!user) throw new AppError("UNAUTHENTICATED", "Sign in required", 401);

@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { getBackend } from "@/lib/backend";
+import { backendConfigured, getBackend } from "@/lib/backend";
+import { redirect } from "next/navigation";
 import { AcceptInvite } from "./AcceptInvite";
 import { Shell, PageHeader } from "@/components/ui/Page";
 import { Alert } from "@/components/ui/Alert";
 
 export default async function AcceptInvitePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
+  if (!backendConfigured()) redirect("/setup");
   const backend = await getBackend();
   const preview = await backend.rpc<{
     valid: boolean;

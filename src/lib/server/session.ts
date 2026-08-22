@@ -1,6 +1,6 @@
 import "server-only";
 import { redirect } from "next/navigation";
-import { getBackend, type Backend, type SessionUser } from "@/lib/backend";
+import { backendConfigured, getBackend, type Backend, type SessionUser } from "@/lib/backend";
 import type { Me, MyLive } from "@/lib/types";
 
 export interface Ctx {
@@ -13,6 +13,7 @@ export interface Ctx {
 export async function requireUser(
   opts: { allowUnverified?: boolean; enforceLock?: boolean; requireTrack?: boolean } = {},
 ): Promise<Ctx> {
+  if (!backendConfigured()) redirect("/setup");
   const backend = await getBackend();
   const user = await backend.getUser();
   if (!user) redirect("/sign-in");
