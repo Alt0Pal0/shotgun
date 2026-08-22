@@ -51,7 +51,7 @@ create index audit_events_entity_idx on public.audit_events (entity_type, entity
 create or replace function app.audit(
   p_entity_type text, p_entity_id uuid, p_action text,
   p_before jsonb default null, p_after jsonb default null, p_reason text default null, p_request_id text default null
-) returns uuid language plpgsql security definer set search_path = public, app as $$
+) returns uuid language plpgsql security definer set search_path = public, app, extensions as $$
 declare v_id uuid;
 begin
   insert into public.audit_events (actor_id, entity_type, entity_id, action, before_json, after_json, reason, request_id)
@@ -71,11 +71,11 @@ create table public.idempotency_keys (
 );
 
 create or replace function app.idempotent_get(p_scope text, p_key text) returns jsonb
-language sql security definer set search_path = public, app as $$
+language sql security definer set search_path = public, app, extensions as $$
   select response from public.idempotency_keys where user_id = app.uid() and scope = p_scope and key = p_key
 $$;
 create or replace function app.idempotent_put(p_scope text, p_key text, p_response jsonb) returns void
-language sql security definer set search_path = public, app as $$
+language sql security definer set search_path = public, app, extensions as $$
   insert into public.idempotency_keys (user_id, scope, key, response) values (app.uid(), p_scope, p_key, p_response)
   on conflict do nothing
 $$;

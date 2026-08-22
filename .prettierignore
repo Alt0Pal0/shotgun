@@ -2,3 +2,4 @@
 node_modules
 pnpm-lock.yaml
 supabase/migrations
+supabase/bundle.sql

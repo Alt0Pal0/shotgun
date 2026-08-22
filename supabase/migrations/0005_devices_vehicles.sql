@@ -11,7 +11,7 @@ create table public.devices (
 );
 
 create or replace function app.register_device(p_key text, p_platform text, p_label text default '')
-returns uuid language plpgsql security definer set search_path = public, app as $$
+returns uuid language plpgsql security definer set search_path = public, app, extensions as $$
 declare v_id uuid; v_uid uuid := app.uid();
 begin
   if v_uid is null then perform app.fail('UNAUTHENTICATED', 'Sign in required'); end if;

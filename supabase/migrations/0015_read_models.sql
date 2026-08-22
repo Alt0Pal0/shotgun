@@ -6,7 +6,7 @@ create or replace function app.profile_json(p_id uuid) returns jsonb language sq
   from public.profiles p where p.id = p_id
 $$;
 
-create or replace function app.me() returns jsonb language sql stable security invoker set search_path = public, app as $$
+create or replace function app.me() returns jsonb language sql stable security invoker set search_path = public, app, extensions as $$
   select jsonb_build_object(
     'profile', app.profile_json(app.uid()),
     'track', (select to_jsonb(t) from public.learner_license_tracks t where t.learner_id = app.uid() and t.status = 'ACTIVE'),
@@ -24,7 +24,7 @@ create or replace function app.me() returns jsonb language sql stable security i
 $$;
 
 -- The session the caller is currently bound to (learner lock) or may view live (adult).
-create or replace function app.my_live_session() returns jsonb language sql stable security invoker set search_path = public, app as $$
+create or replace function app.my_live_session() returns jsonb language sql stable security invoker set search_path = public, app, extensions as $$
   select jsonb_build_object(
     'learner_session', (select jsonb_build_object('id', s.id, 'status', s.status, 'server_started_at', s.server_started_at)
         from public.drive_sessions s where s.learner_id = app.uid() and s.status in ('REQUESTED','READY','ACTIVE','STOP_CANDIDATE') limit 1),
@@ -50,7 +50,7 @@ create or replace function app.session_brief(s public.drive_sessions) returns js
     'created_at', s.created_at, 'updated_at', s.updated_at)
 $$;
 
-create or replace function app.session_detail(p_session uuid) returns jsonb language sql stable security invoker set search_path = public, app as $$
+create or replace function app.session_detail(p_session uuid) returns jsonb language sql stable security invoker set search_path = public, app, extensions as $$
   select app.session_brief(s) || jsonb_build_object(
     'participants', coalesce((select jsonb_agg(jsonb_build_object('user_id', sp.user_id, 'role', sp.role, 'physically_in_vehicle', sp.physically_in_vehicle,
         'can_view_live', sp.can_view_live, 'can_observe', sp.can_observe, 'left_at', sp.left_at, 'profile', app.profile_json(sp.user_id)))
@@ -77,7 +77,7 @@ create or replace function app.session_detail(p_session uuid) returns jsonb lang
 $$;
 
 -- Adult live view. Returns null unless the caller is an authorized live participant (RLS on live_session_state).
-create or replace function app.live_view(p_session uuid) returns jsonb language sql stable security invoker set search_path = public, app as $$
+create or replace function app.live_view(p_session uuid) returns jsonb language sql stable security invoker set search_path = public, app, extensions as $$
   select jsonb_build_object(
     'session', app.session_brief(s),
     'live', to_jsonb(l),
@@ -96,13 +96,13 @@ create or replace function app.live_view(p_session uuid) returns jsonb language 
 $$;
 
 -- Learner locked screen: status + start time only. Never position or observations.
-create or replace function app.lock_state(p_session uuid) returns jsonb language sql stable security invoker set search_path = public, app as $$
+create or replace function app.lock_state(p_session uuid) returns jsonb language sql stable security invoker set search_path = public, app, extensions as $$
   select jsonb_build_object('id', s.id, 'status', s.status, 'server_started_at', s.server_started_at, 'server_time', now(),
     'recorder_device_id', s.primary_recorder_device_id, 'supervisor', app.profile_json(s.supervisor_id))
   from public.drive_sessions s where s.id = p_session and s.learner_id = app.uid()
 $$;
 
-create or replace function app.list_sessions(p_learner uuid, p_filter text default 'ALL') returns jsonb language sql stable security invoker set search_path = public, app as $$
+create or replace function app.list_sessions(p_learner uuid, p_filter text default 'ALL') returns jsonb language sql stable security invoker set search_path = public, app, extensions as $$
   select coalesce(jsonb_agg(app.session_brief(s) || jsonb_build_object(
       'learner_rating', (select rating from public.learner_reflections lr where lr.session_id = s.id),
       'adult_rating', (select rating from public.supervisor_reviews sr where sr.session_id = s.id)) order by coalesce(s.server_started_at, s.manual_started_at, s.created_at) desc), '[]'::jsonb)
@@ -115,13 +115,13 @@ create or replace function app.list_sessions(p_learner uuid, p_filter text defau
       or (p_filter = 'INSTRUCTOR' and s.session_type = 'PROFESSIONAL_INSTRUCTION'))
 $$;
 
-create or replace function app.review_queue() returns jsonb language sql stable security invoker set search_path = public, app as $$
+create or replace function app.review_queue() returns jsonb language sql stable security invoker set search_path = public, app, extensions as $$
   select coalesce(jsonb_agg(app.session_brief(s) order by coalesce(s.server_ended_at, s.manual_ended_at, s.created_at) asc), '[]'::jsonb)
   from public.drive_sessions s
   where s.status in ('AWAITING_ADULT_REVIEW','RECOVERY_REQUIRED') and app.can_review_session(s.id, app.uid())
 $$;
 
-create or replace function app.progress_model(p_learner uuid) returns jsonb language sql stable security invoker set search_path = public, app as $$
+create or replace function app.progress_model(p_learner uuid) returns jsonb language sql stable security invoker set search_path = public, app, extensions as $$
   select jsonb_build_object(
     'learner', app.profile_json(p_learner),
     'track', (select to_jsonb(t) from public.learner_license_tracks t where t.learner_id = p_learner and t.status = 'ACTIVE'),
@@ -142,7 +142,7 @@ create or replace function app.progress_model(p_learner uuid) returns jsonb lang
 $$;
 
 -- Instructor report model: no route geometry, no live location, no private identifiers beyond display name.
-create or replace function app.report_model(p_learner uuid) returns jsonb language sql stable security invoker set search_path = public, app as $$
+create or replace function app.report_model(p_learner uuid) returns jsonb language sql stable security invoker set search_path = public, app, extensions as $$
   select app.progress_model(p_learner) || jsonb_build_object(
     'approved_sessions', coalesce((select jsonb_agg(jsonb_build_object('id', s.id, 'session_type', s.session_type, 'evidence_type', s.evidence_type,
         'started_at', coalesce(s.server_started_at, s.manual_started_at), 'credited_duration_minutes', s.credited_duration_minutes, 'credited_night_minutes', s.credited_night_minutes,
@@ -161,11 +161,11 @@ create or replace function app.report_model(p_learner uuid) returns jsonb langua
   )
 $$;
 
-create or replace function app.skills_list() returns jsonb language sql stable security invoker set search_path = public, app as $$
+create or replace function app.skills_list() returns jsonb language sql stable security invoker set search_path = public, app, extensions as $$
   select coalesce(jsonb_agg(jsonb_build_object('id', id, 'slug', slug, 'label', label) order by sort_order), '[]'::jsonb) from public.skills where active
 $$;
 
-create or replace function app.upsert_vehicle(p_id uuid, p_label text) returns uuid language plpgsql security definer set search_path = public, app as $$
+create or replace function app.upsert_vehicle(p_id uuid, p_label text) returns uuid language plpgsql security definer set search_path = public, app, extensions as $$
 declare v_id uuid;
 begin
   if app.uid() is null then perform app.fail('UNAUTHENTICATED', 'Sign in required'); end if;
@@ -178,11 +178,11 @@ begin
   return v_id;
 end $$;
 
-create or replace function app.archive_vehicle(p_id uuid) returns void language sql security definer set search_path = public, app as $$
+create or replace function app.archive_vehicle(p_id uuid) returns void language sql security definer set search_path = public, app, extensions as $$
   update public.vehicles set archived_at = now() where id = p_id and learner_id = app.uid()
 $$;
 
-create or replace function app.update_profile(p jsonb) returns jsonb language plpgsql security definer set search_path = public, app as $$
+create or replace function app.update_profile(p jsonb) returns jsonb language plpgsql security definer set search_path = public, app, extensions as $$
 begin
   if app.uid() is null then perform app.fail('UNAUTHENTICATED', 'Sign in required'); end if;
   update public.profiles set display_name = coalesce(left(trim(p ->> 'display_name'), 60), display_name),
@@ -193,12 +193,12 @@ begin
   return app.profile_json(app.uid());
 end $$;
 
-create or replace function app.track_event(p_event text, p_props jsonb default '{}'::jsonb) returns void language sql security definer set search_path = public, app as $$
+create or replace function app.track_event(p_event text, p_props jsonb default '{}'::jsonb) returns void language sql security definer set search_path = public, app, extensions as $$
   insert into public.analytics_events (user_id, event, properties) values (app.uid(), left(p_event, 60), coalesce(p_props, '{}'::jsonb))
 $$;
 
 -- Account deletion: removes the auth user (cascades) after audit. Relationship partners keep audit references only.
-create or replace function app.delete_my_account() returns void language plpgsql security definer set search_path = public, app, auth as $$
+create or replace function app.delete_my_account() returns void language plpgsql security definer set search_path = public, app, auth, extensions as $$
 begin
   if app.uid() is null then perform app.fail('UNAUTHENTICATED', 'Sign in required'); end if;
   if exists (select 1 from public.drive_sessions where learner_id = app.uid() and status = any (app.session_live_statuses())) then
@@ -212,7 +212,11 @@ revoke all on all functions in schema app from public;
 grant execute on all functions in schema app to authenticated, service_role;
 revoke execute on function app.record_route_processing(uuid, jsonb) from authenticated;
 
-create or replace function app.ruleset_config(p_jurisdiction text, p_version text) returns jsonb language sql stable security invoker set search_path = public, app as $$
+create or replace function app.ruleset_config(p_jurisdiction text, p_version text) returns jsonb language sql stable security invoker set search_path = public, app, extensions as $$
   select config_json from public.jurisdiction_rule_sets where jurisdiction = p_jurisdiction and version = p_version
 $$;
 grant execute on function app.ruleset_config(text, text) to authenticated, service_role;
+
+-- Anonymous users may preview an invitation (display name + validity only) before signing up.
+grant usage on schema app to anon;
+grant execute on function app.preview_invitation(text) to anon;

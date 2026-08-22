@@ -14,7 +14,7 @@ create table public.profiles (
 );
 create trigger profiles_updated before update on public.profiles for each row execute function app.set_updated_at();
 
-create or replace function app.handle_new_user() returns trigger language plpgsql security definer set search_path = public, app as $$
+create or replace function app.handle_new_user() returns trigger language plpgsql security definer set search_path = public, app, extensions as $$
 begin
   insert into public.profiles (id, email, display_name)
   values (new.id, coalesce(new.email, ''), coalesce(new.raw_user_meta_data ->> 'display_name', ''))

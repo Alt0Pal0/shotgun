@@ -11,7 +11,7 @@ returns double precision language sql immutable as $$
 $$;
 
 create or replace function app.production_ruleset(p_jurisdiction text) returns public.jurisdiction_rule_sets
-language sql stable security definer set search_path = public, app as $$
+language sql stable security definer set search_path = public, app, extensions as $$
   select * from public.jurisdiction_rule_sets
   where jurisdiction = p_jurisdiction and is_production and effective_from <= current_date
     and (effective_to is null or effective_to >= current_date)
@@ -19,7 +19,7 @@ language sql stable security definer set search_path = public, app as $$
 $$;
 
 create or replace function app.create_license_track(p_jurisdiction text, p_permit_issue_date date)
-returns uuid language plpgsql security definer set search_path = public, app as $$
+returns uuid language plpgsql security definer set search_path = public, app, extensions as $$
 declare v_rs public.jurisdiction_rule_sets; v_id uuid; v_uid uuid := app.uid();
 begin
   if v_uid is null then perform app.fail('UNAUTHENTICATED', 'Sign in required'); end if;
@@ -38,7 +38,7 @@ begin
 end $$;
 
 create or replace function app.session_json(p_session uuid) returns jsonb
-language sql stable security definer set search_path = public, app as $$
+language sql stable security definer set search_path = public, app, extensions as $$
   select jsonb_build_object('id', s.id, 'status', s.status, 'learner_id', s.learner_id, 'supervisor_id', s.supervisor_id,
     'server_started_at', s.server_started_at, 'server_ended_at', s.server_ended_at)
   from public.drive_sessions s where s.id = p_session
@@ -46,7 +46,7 @@ $$;
 
 -- Learner requests a drive while parked. Creates a REQUESTED session awaiting the designated adult.
 create or replace function app.request_session(p jsonb)
-returns jsonb language plpgsql security definer set search_path = public, app as $$
+returns jsonb language plpgsql security definer set search_path = public, app, extensions as $$
 declare
   v_uid uuid := app.uid(); v_track public.learner_license_tracks%rowtype; v_supervisor uuid; v_vehicle uuid;
   v_device uuid; v_id uuid; v_prev jsonb; v_key text := p ->> 'idempotency_key'; v_skills uuid[]; v_present boolean;
@@ -99,7 +99,7 @@ end $$;
 
 -- The designated adult confirms: designated in-car supervisor, physically present, vehicle parked, ready.
 create or replace function app.accept_session(p_session uuid, p_confirmations jsonb, p_idempotency_key text default null)
-returns jsonb language plpgsql security definer set search_path = public, app as $$
+returns jsonb language plpgsql security definer set search_path = public, app, extensions as $$
 declare v_s public.drive_sessions%rowtype; v_uid uuid := app.uid(); v_prev jsonb; v_adult uuid;
 begin
   if v_uid is null then perform app.fail('UNAUTHENTICATED', 'Sign in required'); end if;
@@ -138,7 +138,7 @@ end $$;
 
 -- Learner (controller) or the in-car supervisor cancels before the drive is active.
 create or replace function app.cancel_session(p_session uuid, p_reason text default null)
-returns jsonb language plpgsql security definer set search_path = public, app as $$
+returns jsonb language plpgsql security definer set search_path = public, app, extensions as $$
 declare v_s public.drive_sessions%rowtype; v_uid uuid := app.uid();
 begin
   select * into v_s from public.drive_sessions where id = p_session for update;
@@ -157,7 +157,7 @@ end $$;
 -- The recorder device starts the session. Two-phone: requires READY. One-phone fallback: allowed from REQUESTED when
 -- the learner attests the adult is present; the adult is still recorded as the in-car supervisor.
 create or replace function app.start_session(p_session uuid, p_device uuid, p_idempotency_key text, p_one_phone boolean default false)
-returns jsonb language plpgsql security definer set search_path = public, app as $$
+returns jsonb language plpgsql security definer set search_path = public, app, extensions as $$
 declare v_s public.drive_sessions%rowtype; v_uid uuid := app.uid(); v_prev jsonb; v_adult uuid;
 begin
   if v_uid is null then perform app.fail('UNAUTHENTICATED', 'Sign in required'); end if;

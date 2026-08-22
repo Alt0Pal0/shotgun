@@ -32,7 +32,7 @@ create index relationship_invitations_learner_idx on public.relationship_invitat
 
 -- Authorization helpers ---------------------------------------------------------------------
 create or replace function app.is_active_linked_adult(p_learner uuid, p_adult uuid default app.uid()) returns boolean
-language sql stable security definer set search_path = public, app as $$
+language sql stable security definer set search_path = public, app, extensions as $$
   select exists (
     select 1 from public.supervisor_relationships r
     where r.learner_id = p_learner and r.supervisor_id = p_adult and r.status = 'ACTIVE'
@@ -40,14 +40,14 @@ language sql stable security definer set search_path = public, app as $$
 $$;
 
 create or replace function app.can_access_learner(p_learner uuid) returns boolean
-language sql stable security definer set search_path = public, app as $$
+language sql stable security definer set search_path = public, app, extensions as $$
   select p_learner = app.uid() or app.is_active_linked_adult(p_learner, app.uid())
 $$;
 
 -- Invitations ---------------------------------------------------------------------------------
 -- Returns the raw token exactly once; only the SHA-256 hash is stored.
 create or replace function app.create_invitation(p_idempotency_key text default null)
-returns jsonb language plpgsql security definer set search_path = public, app as $$
+returns jsonb language plpgsql security definer set search_path = public, app, extensions as $$
 declare v_token text; v_id uuid; v_prev jsonb; v_uid uuid := app.uid();
 begin
   if v_uid is null then perform app.fail('UNAUTHENTICATED', 'Sign in required'); end if;
@@ -69,7 +69,7 @@ begin
 end $$;
 
 create or replace function app.revoke_invitation(p_invitation_id uuid)
-returns void language plpgsql security definer set search_path = public, app as $$
+returns void language plpgsql security definer set search_path = public, app, extensions as $$
 declare v_inv public.relationship_invitations%rowtype;
 begin
   select * into v_inv from public.relationship_invitations where id = p_invitation_id for update;
@@ -83,7 +83,7 @@ end $$;
 
 -- Public preview of an invitation (no learner PII beyond display name) for the accept screen.
 create or replace function app.preview_invitation(p_token text)
-returns jsonb language plpgsql security definer set search_path = public, app as $$
+returns jsonb language plpgsql security definer set search_path = public, app, extensions as $$
 declare v_inv public.relationship_invitations%rowtype; v_name text;
 begin
   select * into v_inv from public.relationship_invitations where token_hash = encode(digest(p_token, 'sha256'), 'hex');
@@ -96,7 +96,7 @@ begin
 end $$;
 
 create or replace function app.accept_invitation(p_token text, p_attestation_text text)
-returns jsonb language plpgsql security definer set search_path = public, app as $$
+returns jsonb language plpgsql security definer set search_path = public, app, extensions as $$
 declare v_inv public.relationship_invitations%rowtype; v_uid uuid := app.uid(); v_rel_id uuid;
 begin
   if v_uid is null then perform app.fail('UNAUTHENTICATED', 'Sign in required'); end if;
@@ -122,7 +122,7 @@ begin
 end $$;
 
 create or replace function app.revoke_relationship(p_relationship_id uuid, p_reason text default null)
-returns void language plpgsql security definer set search_path = public, app as $$
+returns void language plpgsql security definer set search_path = public, app, extensions as $$
 declare v_rel public.supervisor_relationships%rowtype; v_uid uuid := app.uid();
 begin
   select * into v_rel from public.supervisor_relationships where id = p_relationship_id for update;
@@ -139,7 +139,7 @@ begin
 end $$;
 
 create or replace function app.set_remote_live_view(p_relationship_id uuid, p_allow boolean)
-returns void language plpgsql security definer set search_path = public, app as $$
+returns void language plpgsql security definer set search_path = public, app, extensions as $$
 declare v_rel public.supervisor_relationships%rowtype;
 begin
   select * into v_rel from public.supervisor_relationships where id = p_relationship_id for update;

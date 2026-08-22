@@ -85,7 +85,7 @@ $$;
 
 -- Access helpers --------------------------------------------------------------------------
 create or replace function app.can_view_session(p_session uuid) returns boolean
-language sql stable security definer set search_path = public, app as $$
+language sql stable security definer set search_path = public, app, extensions as $$
   select exists (
     select 1 from public.drive_sessions s
     where s.id = p_session and (s.learner_id = app.uid() or app.is_active_linked_adult(s.learner_id, app.uid()))
@@ -93,7 +93,7 @@ language sql stable security definer set search_path = public, app as $$
 $$;
 
 create or replace function app.is_live_participant(p_session uuid) returns boolean
-language sql stable security definer set search_path = public, app as $$
+language sql stable security definer set search_path = public, app, extensions as $$
   select exists (
     select 1 from public.session_participants sp join public.drive_sessions s on s.id = sp.session_id
     where sp.session_id = p_session and sp.user_id = app.uid() and sp.left_at is null and sp.can_view_live
@@ -103,7 +103,7 @@ language sql stable security definer set search_path = public, app as $$
 $$;
 
 create or replace function app.is_in_car_supervisor(p_session uuid) returns boolean
-language sql stable security definer set search_path = public, app as $$
+language sql stable security definer set search_path = public, app, extensions as $$
   select exists (
     select 1 from public.session_participants sp join public.drive_sessions s on s.id = sp.session_id
     where sp.session_id = p_session and sp.user_id = app.uid() and sp.left_at is null

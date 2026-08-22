@@ -3,7 +3,7 @@
 -- Ingest an ordered batch of first-party samples from the designated recorder. Idempotent on (session, device, sequence_no).
 -- Live state is updated at most every 5 seconds (throttle) and holds only the latest approximate position.
 create or replace function app.ingest_samples(p_session uuid, p_device uuid, p_samples jsonb)
-returns jsonb language plpgsql security definer set search_path = public, app as $$
+returns jsonb language plpgsql security definer set search_path = public, app, extensions as $$
 declare
   v_s public.drive_sessions%rowtype; v_uid uuid := app.uid(); v_live public.live_session_state%rowtype;
   r record; v_inserted int := 0; v_dupes int := 0; v_rejected int := 0;
@@ -102,7 +102,7 @@ end $$;
 -- Recorder heartbeat (no position). Used for offline/permission/battery signals and for learner lock polling.
 create or replace function app.report_recorder_status(p_session uuid, p_device uuid, p_recorder_state public.recorder_state,
   p_connectivity public.connectivity_state, p_battery_warning text default null, p_location_permission text default null)
-returns jsonb language plpgsql security definer set search_path = public, app as $$
+returns jsonb language plpgsql security definer set search_path = public, app, extensions as $$
 declare v_s public.drive_sessions%rowtype; v_uid uuid := app.uid();
 begin
   select * into v_s from public.drive_sessions where id = p_session;
@@ -124,7 +124,7 @@ end $$;
 -- End the drive. Normal end requires server-side stationary evidence (STOP_CANDIDATE). Override requires a reason and
 -- marks gps_incomplete. Learner (controller) or in-car supervisor may end. Idempotent.
 create or replace function app.end_session(p_session uuid, p_idempotency_key text, p_override_reason text default null, p_confirmed_parked boolean default false)
-returns jsonb language plpgsql security definer set search_path = public, app as $$
+returns jsonb language plpgsql security definer set search_path = public, app, extensions as $$
 declare v_s public.drive_sessions%rowtype; v_uid uuid := app.uid(); v_prev jsonb; v_override boolean := false; v_minutes int;
 begin
   if v_uid is null then perform app.fail('UNAUTHENTICATED', 'Sign in required'); end if;
@@ -163,7 +163,7 @@ end $$;
 
 -- Server-only: store processed route + metrics, then advance to AWAITING_LEARNER_REFLECTION (or RECOVERY_REQUIRED on failure).
 create or replace function app.record_route_processing(p_session uuid, p jsonb)
-returns jsonb language plpgsql security definer set search_path = public, app as $$
+returns jsonb language plpgsql security definer set search_path = public, app, extensions as $$
 declare v_s public.drive_sessions%rowtype; v_status public.session_status;
 begin
   if not app.is_service_role() then perform app.fail('FORBIDDEN', 'Server only'); end if;
@@ -201,7 +201,7 @@ end $$;
 
 -- Low-interaction in-drive observation. Verified only when the author is the physically present in-car supervisor.
 create or replace function app.add_observation(p_session uuid, p jsonb)
-returns jsonb language plpgsql security definer set search_path = public, app as $$
+returns jsonb language plpgsql security definer set search_path = public, app, extensions as $$
 declare
   v_s public.drive_sessions%rowtype; v_uid uuid := app.uid(); v_part public.session_participants%rowtype;
   v_live public.live_session_state%rowtype; v_id uuid; v_verified boolean; v_type public.observation_type; v_note text;

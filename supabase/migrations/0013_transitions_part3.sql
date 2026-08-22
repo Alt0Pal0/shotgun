@@ -1,7 +1,7 @@
 -- 0013 State machine part 3: reflection, adult review/approval with contributions, manual records, route deletion
 
 create or replace function app.save_reflection(p_session uuid, p jsonb, p_submit boolean default false)
-returns jsonb language plpgsql security definer set search_path = public, app as $$
+returns jsonb language plpgsql security definer set search_path = public, app, extensions as $$
 declare v_s public.drive_sessions%rowtype; v_uid uuid := app.uid(); v_skills uuid[]; v_rating int; v_sk uuid;
 begin
   if v_uid is null then perform app.fail('UNAUTHENTICATED', 'Sign in required'); end if;
@@ -40,7 +40,7 @@ create or replace function app.session_interval(s public.drive_sessions) returns
 $$;
 
 create or replace function app.find_overlaps(p_learner uuid, p_session uuid) returns jsonb
-language sql stable security definer set search_path = public, app as $$
+language sql stable security definer set search_path = public, app, extensions as $$
   select coalesce(jsonb_agg(jsonb_build_object('session_id', o.id, 'started_at', lower(app.session_interval(o)), 'ended_at', upper(app.session_interval(o)))), '[]'::jsonb)
   from public.drive_sessions s join public.drive_sessions o
     on o.learner_id = s.learner_id and o.id <> s.id and o.status = 'APPROVED'
@@ -49,7 +49,7 @@ language sql stable security definer set search_path = public, app as $$
 $$;
 
 create or replace function app.can_review_session(p_session uuid, p_uid uuid) returns boolean
-language sql stable security definer set search_path = public, app as $$
+language sql stable security definer set search_path = public, app, extensions as $$
   select exists (select 1 from public.drive_sessions s where s.id = p_session
     and app.is_active_linked_adult(s.learner_id, p_uid)
     and (s.supervisor_id is null or s.supervisor_id = p_uid or s.evidence_type <> 'GPS'))
@@ -57,7 +57,7 @@ $$;
 
 -- Derive requirement contributions from the versioned ruleset (generic over primitives; no California hardcoding).
 create or replace function app.derive_contributions(p_session uuid) returns jsonb
-language plpgsql security definer set search_path = public, app as $$
+language plpgsql security definer set search_path = public, app, extensions as $$
 declare v_s public.drive_sessions%rowtype; v_rs public.jurisdiction_rule_sets%rowtype; req jsonb; v_out jsonb := '[]'::jsonb;
   v_parent_ok boolean; v_amount int;
 begin
@@ -84,7 +84,7 @@ end $$;
 
 -- Adult review: approve / return / void. Transactional, idempotent, audited. Approval replaces contributions exactly once.
 create or replace function app.review_session(p_session uuid, p jsonb, p_idempotency_key text)
-returns jsonb language plpgsql security definer set search_path = public, app as $$
+returns jsonb language plpgsql security definer set search_path = public, app, extensions as $$
 declare
   v_s public.drive_sessions%rowtype; v_uid uuid := app.uid(); v_prev jsonb; v_decision public.review_decision;
   v_dur int; v_night int; v_reason text; v_overlaps jsonb; v_version int; v_contrib jsonb; c jsonb; v_sk uuid; v_skills uuid[];
@@ -181,7 +181,7 @@ end $$;
 
 -- Manual supervised drive or professional-instruction session (no GPS). Enters adult review directly.
 create or replace function app.create_manual_session(p jsonb, p_idempotency_key text)
-returns jsonb language plpgsql security definer set search_path = public, app as $$
+returns jsonb language plpgsql security definer set search_path = public, app, extensions as $$
 declare
   v_uid uuid := app.uid(); v_learner uuid := (p ->> 'learner_id')::uuid; v_type public.session_type; v_track public.learner_license_tracks%rowtype;
   v_start timestamptz; v_end timestamptz; v_dur int; v_night int; v_id uuid; v_prev jsonb; v_supervisor uuid; v_rating int;
@@ -233,7 +233,7 @@ end $$;
 
 -- Delete precise route data while retaining the learning record. Irreversible; audited.
 create or replace function app.delete_route(p_session uuid, p_clear_distance boolean default false, p_reason text default null)
-returns jsonb language plpgsql security definer set search_path = public, app as $$
+returns jsonb language plpgsql security definer set search_path = public, app, extensions as $$
 declare v_s public.drive_sessions%rowtype; v_uid uuid := app.uid(); v_samples int;
 begin
   if v_uid is null then perform app.fail('UNAUTHENTICATED', 'Sign in required'); end if;
@@ -255,7 +255,7 @@ end $$;
 
 -- Adults can add/replace the note on their own observation after parking (not required while moving).
 create or replace function app.update_observation_note(p_observation uuid, p_note text)
-returns void language plpgsql security definer set search_path = public, app as $$
+returns void language plpgsql security definer set search_path = public, app, extensions as $$
 begin
   update public.drive_observations set note = nullif(left(p_note, 280), '') where id = p_observation and author_id = app.uid();
   if not found then perform app.fail('NOT_FOUND', 'Observation not found'); end if;

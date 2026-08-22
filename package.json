@@ -17,7 +17,8 @@
     "test:unit": "vitest run --project unit",
     "test:db": "vitest run --project db",
     "test:e2e": "playwright test",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "db:bundle": "./scripts/bundle-migrations.sh"
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^2.1.1",
