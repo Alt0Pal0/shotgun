@@ -1,51 +1,35 @@
+import Link from "next/link";
 import { requireUser } from "@/lib/server/session";
 import { PageHeader, Card } from "@/components/ui/Page";
 import { signOutAction } from "@/app/(auth)/actions";
-import { ProfileControls } from "./ProfileControls";
+import { ProfileForm } from "./ProfileForm";
+import { DangerZone } from "./DangerZone";
 import { GPS_LIMITS_COPY, PRIVACY_COPY, SAFETY_LOCK_COPY } from "@/lib/copy";
-import Link from "next/link";
+import { TERMS_VERSION } from "@/lib/legal/documents";
 
 export default async function ProfilePage() {
-  const { me, user, backend } = await requireUser();
+  const { me, user } = await requireUser();
+  const isLearner = Boolean(me.track);
   return (
     <>
-      <PageHeader
-        eyebrow="Profile & privacy"
-        title={me.profile?.display_name || "Your profile"}
-        subtitle={user.email}
-      />
+      <PageHeader eyebrow="Me" title={me.profile?.display_name || "Your profile"} subtitle={user.email} />
       <div className="space-y-4">
-        <Card title="Account">
-          <dl className="grid grid-cols-2 gap-2 text-sm">
-            <dt className="text-muted">Roles</dt>
-            <dd>
-              {[me.track && "Learner", (me.profile?.is_adult || me.learners.length) && "Supervisor"]
-                .filter(Boolean)
-                .join(", ") || "—"}
-            </dd>
-            {me.track && (
-              <>
-                <dt className="text-muted">Permit issued</dt>
-                <dd>{me.track.permit_issue_date}</dd>
-                <dt className="text-muted">Ruleset</dt>
-                <dd>
-                  {me.track.jurisdiction} {me.track.ruleset_version}
-                </dd>
-              </>
-            )}
-            <dt className="text-muted">Timezone</dt>
-            <dd>{me.profile?.timezone}</dd>
-            <dt className="text-muted">Backend</dt>
-            <dd>{backend.mode}</dd>
-          </dl>
-          {me.track && (
-            <Link href="/invite" className="mt-3 block text-sm text-accent">
-              Manage linked adults →
+        <ProfileForm
+          displayName={me.profile?.display_name ?? ""}
+          timezone={me.profile?.timezone ?? "America/Los_Angeles"}
+          unit={me.profile?.unit_preference ?? "imperial"}
+        />
+
+        {isLearner && me.track && (
+          <Card title="Permit">
+            <p className="text-sm">California · issued {me.track.permit_issue_date}</p>
+            <Link href="/invite" className="mt-2 inline-block text-sm text-accent">
+              Manage who rides shotgun →
             </Link>
-          )}
-        </Card>
+          </Card>
+        )}
         {me.learners.length > 0 && (
-          <Card title="Linked learners">
+          <Card title="Learners you ride shotgun for">
             <ul className="space-y-2 text-sm">
               {me.learners.map((l) => (
                 <li key={l.relationship_id} className="flex items-center justify-between">
@@ -58,7 +42,13 @@ export default async function ProfilePage() {
             </ul>
           </Card>
         )}
-        <ProfileControls learners={me.learners} />
+
+        <form action={signOutAction}>
+          <button type="submit" className="tap w-full rounded-xl border border-border py-3 text-sm font-semibold">
+            Sign out
+          </button>
+        </form>
+
         <Card title="Safety & GPS limitations">
           <p className="text-sm text-muted">{SAFETY_LOCK_COPY.limits}</p>
           <p className="mt-2 text-sm text-muted">{GPS_LIMITS_COPY}</p>
@@ -66,24 +56,30 @@ export default async function ProfilePage() {
         <Card title="Privacy">
           <p className="text-sm text-muted">{PRIVACY_COPY}</p>
         </Card>
-        <p className="text-center text-sm">
-          <Link className="text-accent underline" href="/about">
-            Why &ldquo;Shotgun&rdquo;? Rules of the game &amp; California shotgun-seat rules
-          </Link>
-          <br />
-          <Link className="underline" href="/terms">
-            Terms of Use
-          </Link>{" "}
-          ·{" "}
-          <Link className="underline" href="/privacy">
-            Privacy Policy
-          </Link>
-        </p>
-        <form action={signOutAction}>
-          <button type="submit" className="tap w-full rounded-xl border border-border py-3 text-sm font-semibold">
-            Sign out
-          </button>
-        </form>
+        <Card title="Legal">
+          <ul className="space-y-1 text-sm">
+            <li>
+              <Link className="tap inline-flex items-center text-accent" href="/terms">
+                Terms of Use
+              </Link>
+            </li>
+            <li>
+              <Link className="tap inline-flex items-center text-accent" href="/privacy">
+                Privacy Policy
+              </Link>
+            </li>
+            <li>
+              <Link className="tap inline-flex items-center text-accent" href="/about">
+                About Shotgun.Rocks — the game, the name, and California&rsquo;s shotgun-seat rules
+              </Link>
+            </li>
+          </ul>
+          <p className="mt-2 text-xs text-muted">
+            You accepted version {TERMS_VERSION}. Your acceptance is recorded with date, time, IP address, and device.
+          </p>
+        </Card>
+
+        <DangerZone learners={me.learners} />
       </div>
     </>
   );

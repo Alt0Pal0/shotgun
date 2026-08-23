@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { requireUser } from "@/lib/server/session";
 import { BottomNav, Shell } from "@/components/ui/Page";
 import { LiveBanner } from "@/components/drive/LiveBanner";
+import { AppHeader } from "@/components/ui/AppHeader";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const { me } = await requireUser({ enforceLock: true });
@@ -25,6 +26,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const active = items.find((i) => path.startsWith(i.href))?.href ?? items[0].href;
   return (
     <>
+      <AppHeader />
       <Shell>
         {isAdult && <LiveBanner />}
         {children}

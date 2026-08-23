@@ -117,8 +117,8 @@ test("unrelated adult and anonymous users cannot reach learner data; unverified 
   expect((await page.request.get(`/api/reports/instructor?learner=${id}`)).status()).toBe(404);
   expect(await (await page.request.get(`/api/sessions?learner=${id}`)).json()).toEqual([]);
   // Page-level: learner overview 404s
-  const res = await page.goto(`/learner/${id}`);
-  expect(res?.status()).toBe(404);
+  await page.goto(`/learner/${id}`);
+  await expect(page.getByText(/could not be found/i)).toBeVisible();
   await ctx.close();
   await learner.ctx.close();
 });

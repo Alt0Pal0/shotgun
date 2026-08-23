@@ -72,3 +72,8 @@ body {
   overflow-x: hidden;
   max-width: 100%;
 }
+
+/* Keep fixed chrome clear of the iOS home indicator */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}

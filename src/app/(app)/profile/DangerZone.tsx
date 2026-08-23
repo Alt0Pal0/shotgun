@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Page";
 import { Alert } from "@/components/ui/Alert";
 
-export function ProfileControls({ learners }: { learners: RelationshipLearner[] }) {
+export function DangerZone({ learners }: { learners: RelationshipLearner[] }) {
   const router = useRouter();
   const [err, setErr] = useState<string | null>(null);
   async function revoke(id: string) {
@@ -26,7 +26,7 @@ export function ProfileControls({ learners }: { learners: RelationshipLearner[] 
     }
   }
   return (
-    <Card title="Controls">
+    <Card title="Danger zone" className="border-rose/40">
       {learners.map((l) => (
         <Button
           key={l.relationship_id}
