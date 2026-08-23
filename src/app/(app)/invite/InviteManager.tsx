@@ -6,6 +6,7 @@ import { linkInviteShareText } from "@/lib/brand";
 import type { Invitation, RelationshipAdult } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
+import { Input } from "@/components/ui/Field";
 import { Card } from "@/components/ui/Page";
 import { fmtDateTime } from "@/lib/util/format";
 
@@ -23,6 +24,8 @@ export function InviteManager({
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [email, setEmail] = useState("");
+  const [sent, setSent] = useState<string | null>(null);
 
   async function create() {
     setBusy(true);
@@ -33,6 +36,27 @@ export function InviteManager({
       router.refresh();
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Could not create link");
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function sendEmail(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setErr(null);
+    setSent(null);
+    try {
+      const r = await api.post<{ emailed: boolean; email_error?: string }>("/api/invitations", {
+        idempotency_key: newIdempotencyKey(),
+        email,
+      });
+      if (r.emailed) {
+        setSent(email);
+        setEmail("");
+        router.refresh();
+      } else setErr(r.email_error ?? "Could not send the email");
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Could not send");
     } finally {
       setBusy(false);
     }
@@ -90,9 +114,37 @@ export function InviteManager({
             </div>
           </div>
         ) : (
-          <Button onClick={create} loading={busy} size="lg" block>
-            Invite an adult to ride shotgun
-          </Button>
+          <div className="space-y-3">
+            <form onSubmit={sendEmail} className="space-y-2">
+              <Input
+                label="Email an invitation"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="parent@example.com"
+                autoComplete="email"
+              />
+              <Button type="submit" loading={busy} disabled={!email} size="lg" block>
+                Email them: &ldquo;Come ride shotgun with me&rdquo;
+              </Button>
+              <p className="text-xs text-muted">
+                Works whether or not they already have an account. The link is single-use and expires in 7 days.
+              </p>
+            </form>
+            {sent && (
+              <Alert tone="success">
+                Invitation sent to {sent}. Ask them to check their inbox (and spam, the first time).
+              </Alert>
+            )}
+            <div className="flex items-center gap-3 text-xs text-muted">
+              <span className="h-px flex-1 bg-border" />
+              or
+              <span className="h-px flex-1 bg-border" />
+            </div>
+            <Button onClick={create} loading={busy} variant="secondary" block>
+              Get a link to text or share
+            </Button>
+          </div>
         )}
         {err && (
           <div className="mt-2">

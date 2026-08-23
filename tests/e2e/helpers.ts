@@ -42,7 +42,7 @@ export async function createLearner(
 
 export async function inviteLink(learner: Page): Promise<string> {
   await learner.goto("/invite");
-  await learner.getByRole("button", { name: /Invite an adult to ride shotgun/ }).click();
+  await learner.getByRole("button", { name: /Get a link to text or share/ }).click();
   const link = await learner.getByTestId("invite-link").textContent();
   expect(link).toContain("/invite/");
   return link as string;
