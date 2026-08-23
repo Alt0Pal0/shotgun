@@ -90,6 +90,7 @@ test("progress bars expose values and status chips are text, not color only", as
   const learner = await createLearner(browser, "Bars Learner");
   await learner.page.goto("/progress");
   const bars = learner.page.getByRole("progressbar");
+  await expect(bars.first()).toBeVisible();
   expect(await bars.count()).toBeGreaterThanOrEqual(3);
   await expect(bars.first()).toHaveAttribute("aria-valuenow", /\d+/);
   await expect(learner.page.getByText("Supervised practice")).toBeVisible();

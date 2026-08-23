@@ -34,7 +34,7 @@ test("manual and professional records, route deletion, PDF privacy, and relation
   await expect(adult.page.getByText("2 drives waiting")).toBeVisible();
   for (let i = 0; i < 2; i++) {
     await adult.page.goto("/reviews");
-    await adult.page.getByRole("list").first().getByRole("link").first().click();
+    await adult.page.getByRole("main").getByRole("list").first().getByRole("link").first().click();
     await adult.page.getByRole("radio", { name: "5 of 5" }).first().click();
     await adult.page.getByRole("button", { name: "APPROVE DRIVE" }).click();
     await expect(adult.page.getByText("Approved", { exact: true })).toBeVisible();
@@ -55,7 +55,7 @@ test("manual and professional records, route deletion, PDF privacy, and relation
   await learner.page.getByLabel(/I understand this record needs adult approval/).check();
   await learner.page.getByRole("button", { name: "Save for review" }).click();
   await adult.page.goto("/reviews");
-  await adult.page.getByRole("list").first().getByRole("link").first().click();
+  await adult.page.getByRole("main").getByRole("list").first().getByRole("link").first().click();
   await adult.page.getByRole("radio", { name: "3 of 5" }).first().click();
   await adult.page.getByRole("button", { name: "APPROVE DRIVE" }).click();
   await expect(adult.page.getByText(/overlaps an approved record/)).toBeVisible();

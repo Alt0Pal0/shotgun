@@ -120,7 +120,7 @@ test("learner and adult complete the full drive-review loop on two phones", asyn
   await expect(learner.page.getByText("0.8 / 50 h")).toBeVisible();
   await expect(learner.page.getByText("0.2 / 10 h")).toBeVisible();
   await learner.page.goto("/drives?filter=APPROVED");
-  await learner.page.getByRole("list").getByRole("link").first().click();
+  await learner.page.getByRole("main").getByRole("list").getByRole("link").first().click();
   await expect(learner.page.getByText("Mirror check earlier.")).toBeVisible();
   await expect(learner.page.getByRole("heading", { name: "In-drive observations" })).toBeVisible();
   await expect(learner.page.getByRole("list").getByText("Lane change")).toBeVisible();
