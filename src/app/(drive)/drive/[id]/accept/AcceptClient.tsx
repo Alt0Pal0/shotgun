@@ -122,7 +122,7 @@ export function AcceptClient({ session, isDesignated }: { session: SessionDetail
       )}
       <div className="mt-4 space-y-2">
         <Button size="xl" block disabled={!all} loading={busy} onClick={accept}>
-          Shotgun! Let's go
+          Shotgun! Let&rsquo;s go
         </Button>
         <Button variant="ghost" block onClick={decline}>
           Decline
