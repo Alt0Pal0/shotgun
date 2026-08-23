@@ -167,8 +167,18 @@ export const postgresBackend: Backend = {
       const sid = await server<string>("auth_create_session", { p_user: r.user_id });
       await setCookie(sid);
       const link = `${appUrl()}/auth/verify?token=${r.verify_token}`;
-      const sent = await sendAuthEmail(email, "Verify your email", link, `Confirm your email to start using ${BRAND}:`);
-      return { ok: true, needsVerification: true, devVerifyUrl: sent.devLink?.replace(appUrl(), "") };
+      try {
+        const sent = await sendAuthEmail(
+          email,
+          "Verify your email",
+          link,
+          `Confirm your email to start using ${BRAND}:`,
+        );
+        return { ok: true, needsVerification: true, devVerifyUrl: sent.devLink?.replace(appUrl(), "") };
+      } catch (e) {
+        // The account exists; let the user retry delivery from the verify screen instead of failing sign-up.
+        return { ok: true, needsVerification: true, emailError: (e as Error).message };
+      }
     } catch (e) {
       return { ok: false, error: (e as Error).message };
     }

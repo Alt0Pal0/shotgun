@@ -18,6 +18,12 @@ export default async function VerifyPage({
       title="Check your email"
       subtitle={`We sent a verification link${user?.email ? ` to ${user.email}` : ""}. Open it on this phone to continue.`}
     >
+      {sp.emailError && (
+        <p className="mb-4 rounded-xl border border-rose/50 bg-rose/10 p-3 text-sm">
+          Your account was created, but the verification email could not be sent ({sp.emailError}). You can resend
+          below.
+        </p>
+      )}
       {sp.invalid && (
         <p className="mb-4 rounded-xl border border-rose/50 bg-rose/10 p-3 text-sm">
           That verification link is invalid or expired. Request a new one below.

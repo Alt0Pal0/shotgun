@@ -16,7 +16,7 @@ export class AppError extends Error {
 }
 
 export type AuthResult =
-  { ok: true; needsVerification?: boolean; devVerifyUrl?: string } | { ok: false; error: string };
+  { ok: true; needsVerification?: boolean; devVerifyUrl?: string; emailError?: string } | { ok: false; error: string };
 
 /**
  * Backend boundary. Every data operation is an `app.*` RPC executed under the caller's RLS context.

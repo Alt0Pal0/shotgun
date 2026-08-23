@@ -25,9 +25,11 @@ export async function signUpAction(_: AuthState, form: FormData): Promise<AuthSt
     .rpc("track_event", { p_event: "account_created", p_props: { role: parsed.data.role } })
     .catch(() => undefined);
   const next = form.get("next");
-  redirect(
-    `/verify${r.devVerifyUrl ? `?dev=${encodeURIComponent(r.devVerifyUrl)}` : ""}${typeof next === "string" && next ? `${r.devVerifyUrl ? "&" : "?"}next=${encodeURIComponent(next)}` : ""}`,
-  );
+  const q = new URLSearchParams();
+  if (r.devVerifyUrl) q.set("dev", r.devVerifyUrl);
+  if (r.emailError) q.set("emailError", r.emailError);
+  if (typeof next === "string" && next) q.set("next", next);
+  redirect(`/verify${q.size ? `?${q}` : ""}`);
 }
 
 export async function signInAction(_: AuthState, form: FormData): Promise<AuthState> {
