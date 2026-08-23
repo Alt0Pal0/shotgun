@@ -42,7 +42,7 @@ export function AcceptInvite({ token, learnerName }: { token: string; learnerNam
       </p>
       {err && <Alert tone="error">{err}</Alert>}
       <Button size="lg" block disabled={!attest} loading={busy} onClick={accept}>
-        Accept and link
+        Accept — I&rsquo;ll ride shotgun
       </Button>
     </div>
   );

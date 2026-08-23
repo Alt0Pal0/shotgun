@@ -74,7 +74,7 @@ test("manual and professional records, route deletion, PDF privacy, and relation
   await learner.page.goto("/invite");
   learner.page.once("dialog", (d) => d.accept());
   await learner.page.getByRole("button", { name: "Remove" }).click();
-  await expect(learner.page.getByText("No adults linked yet.")).toBeVisible();
+  await expect(learner.page.getByText(/No one is riding shotgun yet/)).toBeVisible();
   await adult.page.goto("/reviews");
   await expect(adult.page.getByText("Nothing waiting for review")).toBeVisible();
   const denied = await adult.page.request.get(`/api/reports/instructor?learner=${await learnerId(learner.page)}`);

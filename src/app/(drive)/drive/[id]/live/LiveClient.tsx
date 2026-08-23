@@ -129,7 +129,7 @@ export function LiveClient({
             Live · {view.session.learner?.display_name}
           </p>
           <h1 className="text-xl font-bold">
-            {view.viewer.is_in_car_supervisor ? "You are the in-car supervisor" : "Remote view (notes only)"}
+            {view.viewer.is_in_car_supervisor ? "You're riding shotgun 🤘" : "Remote view (notes only)"}
           </h1>
           <p className="text-xs text-muted">
             {view.session.vehicle?.label ?? "No vehicle"} ·{" "}

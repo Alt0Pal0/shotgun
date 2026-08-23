@@ -4,12 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import { api, newIdempotencyKey } from "@/lib/client/api";
 import { ensureDeviceId } from "@/lib/client/device";
 import type { LockState } from "@/lib/types";
+import { rideRequestShareText } from "@/lib/brand";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { PageHeader, Card } from "@/components/ui/Page";
 
 /** Learner waits for the designated adult to confirm. When READY, this (recorder) device starts the session. */
-export function WaitingClient({ initial }: { initial: LockState }) {
+export function WaitingClient({ initial, learnerName }: { initial: LockState; learnerName: string }) {
   const router = useRouter();
   const [lock, setLock] = useState(initial);
   const [err, setErr] = useState<string | null>(null);
@@ -62,6 +63,21 @@ export function WaitingClient({ initial }: { initial: LockState }) {
       setBusy(false);
     }
   }
+  async function nudge() {
+    const url = `${window.location.origin}/drive/${initial.id}/accept`;
+    const text = rideRequestShareText(learnerName, url);
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "Come ride shotgun with me? 🤘", text, url });
+        return;
+      } catch {
+        /* cancelled */
+      }
+    }
+    await navigator.clipboard.writeText(text);
+    setErr(null);
+    alert("Message copied — paste it into a text.");
+  }
   async function cancel() {
     await api.post(`/api/drives/${initial.id}/cancel`, { reason: "learner cancelled" });
     router.replace("/home");
@@ -72,11 +88,15 @@ export function WaitingClient({ initial }: { initial: LockState }) {
     <>
       <PageHeader
         eyebrow="Drive request sent"
-        title={lock.status === "READY" ? "Starting…" : `Waiting for ${lock.supervisor?.display_name ?? "your adult"}`}
+        title={
+          lock.status === "READY"
+            ? "Starting…"
+            : `Waiting for ${lock.supervisor?.display_name ?? "your shotgun"} to call it`
+        }
         subtitle={
           lock.status === "READY"
-            ? "Your adult confirmed. Starting GPS recording on this phone."
-            : "Ask them to open the app and confirm they're in the car with you."
+            ? "Your shotgun confirmed. Starting GPS recording on this phone."
+            : "They confirm from their own phone that they're in the passenger seat and the car is parked."
         }
       />
       <Card className="mb-4">
@@ -93,6 +113,9 @@ export function WaitingClient({ initial }: { initial: LockState }) {
         </div>
       )}
       <div className="space-y-2">
+        <Button block onClick={nudge}>
+          Text them: &ldquo;Come ride shotgun with me?&rdquo;
+        </Button>
         <Button variant="secondary" block loading={busy} onClick={() => startNow(true)}>
           My adult is here but can&apos;t confirm on their phone — start on this phone
         </Button>

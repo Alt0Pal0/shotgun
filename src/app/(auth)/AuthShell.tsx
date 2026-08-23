@@ -7,6 +7,11 @@ export function AuthShell({ title, subtitle, children }: { title: string; subtit
       <h1 className="text-3xl font-bold">{title}</h1>
       {subtitle && <p className="mt-2 text-sm text-muted">{subtitle}</p>}
       <div className="mt-6">{children}</div>
+      <p className="mt-8 text-center text-xs text-muted">
+        <a className="underline" href="/about">
+          Why &ldquo;Shotgun&rdquo;?
+        </a>
+      </p>
     </main>
   );
 }

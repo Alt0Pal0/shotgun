@@ -26,12 +26,13 @@ export default async function HomePage() {
       <PageHeader
         eyebrow="Learner"
         title={`Ready to practice, ${me.profile?.display_name?.split(" ")[0] ?? "there"}?`}
-        subtitle="California permit progress · approved drives only"
+        subtitle="California permit progress · approved drives only · your shotgun crew has the final say"
       />
       <Card className="mb-4 border-accent/60">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">Start a drive</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">Call shotgun</h2>
         <p className="mb-3 text-sm text-muted">
-          Record your next supervised session. Only start while parked with your supervising adult in the car.
+          Ask a linked adult to ride shotgun and log the hours. Only start while parked, with them in the passenger
+          seat.
         </p>
         {linked.length ? (
           <Link
@@ -41,8 +42,8 @@ export default async function HomePage() {
             START DRIVE
           </Link>
         ) : (
-          <Alert tone="warn" title="Link an adult first">
-            A parent or supervising adult must be linked before a drive can be approved.{" "}
+          <Alert tone="warn" title="Nobody to ride shotgun yet">
+            A California-licensed adult 25+ must ride shotgun on every practice drive, and they approve your hours.{" "}
             <Link className="underline" href="/invite">
               Invite an adult
             </Link>

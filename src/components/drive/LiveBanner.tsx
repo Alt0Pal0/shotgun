@@ -41,14 +41,14 @@ export function LiveBanner() {
                   : "Drive in progress"}
             </p>
             <p className="font-semibold">
-              {s.learner.display_name} {requested ? "wants to start a drive" : "is driving now"}
+              {s.learner.display_name} {requested ? "called shotgun — will you ride along?" : "is driving now"}
             </p>
             <p className="text-sm text-accent">
               {requested
                 ? s.is_designated
-                  ? "Confirm you're in the car →"
+                  ? "Confirm from the passenger seat →"
                   : "Waiting for the designated adult"
-                : "Open live view →"}
+                : "Open the shotgun view →"}
             </p>
           </Link>
         );

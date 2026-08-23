@@ -13,28 +13,28 @@ test("learner and adult complete the full drive-review loop on two phones", asyn
 
   // Learner requests a drive
   await learner.page.goto("/drive/new");
-  await expect(learner.page.getByRole("heading", { name: "Ready to practice?" })).toBeVisible();
+  await expect(learner.page.getByRole("heading", { name: /riding shotgun today/ })).toBeVisible();
   await learner.page.getByLabel("Add a vehicle").fill("Blue Civic");
   await learner.page.getByRole("button", { name: "Add" }).click();
   await learner.page.getByRole("button", { name: "Lane change" }).click();
-  await learner.page.getByLabel("My supervising adult is physically in the car with me").check();
+  await learner.page.getByLabel(/physically in the passenger seat/).check();
   await learner.page.getByLabel(/The vehicle is parked/).check();
-  await expect(learner.page.getByRole("button", { name: "REQUEST DRIVE" })).toBeEnabled();
-  await learner.page.getByRole("button", { name: "REQUEST DRIVE" }).click();
+  await expect(learner.page.getByRole("button", { name: "ASK THEM TO RIDE SHOTGUN" })).toBeEnabled();
+  await learner.page.getByRole("button", { name: "ASK THEM TO RIDE SHOTGUN" }).click();
   await expect(learner.page.getByRole("heading", { name: /Waiting for Sam Parent/ })).toBeVisible();
 
   // Adult sees the request and confirms all four items
   await adult.page.goto("/reviews");
   await adult.page.getByRole("link", { name: /Drive request/ }).click();
-  await expect(adult.page.getByRole("heading", { name: /wants to start a drive/ })).toBeVisible();
+  await expect(adult.page.getByRole("heading", { name: /called shotgun/ })).toBeVisible();
   for (const label of [
-    "I am the designated in-car supervisor",
-    "I am physically present",
+    /riding shotgun on this drive/,
+    /physically in the passenger seat/,
     "The vehicle is parked",
     "We're ready to begin",
   ])
     await adult.page.getByLabel(label).check();
-  await adult.page.getByRole("button", { name: "Confirm and start" }).click();
+  await adult.page.getByRole("button", { name: /Shotgun! Let/ }).click();
 
   // Learner's recorder starts the session → safety lock
   await expect(learner.page.getByTestId("locked-drive")).toBeVisible({ timeout: 30_000 });
@@ -59,7 +59,7 @@ test("learner and adult complete the full drive-review loop on two phones", asyn
 
   // Adult live view
   await expect(adult.page.getByTestId("live-view")).toBeVisible({ timeout: 30_000 });
-  await expect(adult.page.getByRole("heading", { name: "You are the in-car supervisor" })).toBeVisible();
+  await expect(adult.page.getByRole("heading", { name: /riding shotgun/ })).toBeVisible();
   await expect(adult.page.getByText(/Updated .* ago/)).toBeVisible({ timeout: 30_000 });
   await expect(adult.page.getByTestId("route-map")).toBeVisible();
   await adult.page.getByRole("button", { name: "Needs practice" }).click();

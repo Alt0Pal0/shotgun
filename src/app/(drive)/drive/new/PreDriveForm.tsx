@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Checkbox, Input, Select } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
 import { Card } from "@/components/ui/Page";
-import { SAFETY_LOCK_COPY } from "@/lib/copy";
+import { CA_SHOTGUN_RULES, SAFETY_LOCK_COPY } from "@/lib/copy";
 
 type Perm = "granted" | "denied" | "prompt" | "unknown";
 
@@ -114,7 +114,7 @@ export function PreDriveForm({
     <div className="space-y-4">
       <Card>
         <Select
-          label="Supervising adult (in the car)"
+          label="Riding shotgun (licensed adult 25+, in the car)"
           value={supervisor}
           onChange={(e) => setSupervisor(e.target.value)}
         >
@@ -203,10 +203,23 @@ export function PreDriveForm({
           </label>
         )}
       </Card>
+      <Card title="Shotgun rules (California)">
+        <ul className="list-disc space-y-1 pl-4 text-xs text-muted">
+          {CA_SHOTGUN_RULES.permit.slice(0, 3).map((r) => (
+            <li key={r}>{r}</li>
+          ))}
+        </ul>
+        <p className="mt-2 text-xs text-muted">
+          Full rules, including the first year after licensing:{" "}
+          <a className="underline" href="/about" target="_blank" rel="noreferrer">
+            About Shotgun.Rocks
+          </a>
+        </p>
+      </Card>
       <Checkbox
         checked={present}
         onChange={(e) => setPresent(e.target.checked)}
-        label="My supervising adult is physically in the car with me"
+        label="My shotgun is physically in the passenger seat with me"
       />
       <Checkbox
         checked={parked}
@@ -222,12 +235,12 @@ export function PreDriveForm({
       />
       {err && <Alert tone="error">{err}</Alert>}
       <Button size="xl" block disabled={!ready} loading={busy} onClick={start}>
-        {onePhone ? "START DRIVE" : "REQUEST DRIVE"}
+        {onePhone ? "START DRIVE" : "ASK THEM TO RIDE SHOTGUN"}
       </Button>
       <p className="text-center text-xs text-muted">
         {onePhone
           ? "The app locks immediately."
-          : "Your adult gets the request on their phone. The app locks the moment the drive becomes active."}
+          : "They get the request on their phone and can confirm there. The app locks the moment the drive becomes active."}
       </p>
     </div>
   );

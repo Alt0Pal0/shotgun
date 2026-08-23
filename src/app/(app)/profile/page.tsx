@@ -66,6 +66,11 @@ export default async function ProfilePage() {
         <Card title="Privacy">
           <p className="text-sm text-muted">{PRIVACY_COPY}</p>
         </Card>
+        <p className="text-center text-sm">
+          <Link className="text-accent underline" href="/about">
+            Why &ldquo;Shotgun&rdquo;? Rules of the game &amp; California shotgun-seat rules
+          </Link>
+        </p>
         <form action={signOutAction}>
           <button type="submit" className="tap w-full rounded-xl border border-border py-3 text-sm font-semibold">
             Sign out

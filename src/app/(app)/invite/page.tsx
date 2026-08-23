@@ -8,10 +8,14 @@ export default async function InvitePage() {
     <>
       <PageHeader
         eyebrow="Connect"
-        title="Invite a parent or supervisor"
-        subtitle="Links are single-use and expire after 7 days. You can revoke one any time."
+        title="Who's riding shotgun?"
+        subtitle="Link the parents and licensed adults (25+) who will sit in the passenger seat. Linking happens once; asking them along for a drive happens from Start Drive."
       />
-      <InviteManager adults={me.adults} invitations={me.invitations} />
+      <InviteManager
+        adults={me.adults}
+        invitations={me.invitations}
+        learnerName={me.profile?.display_name?.split(" ")[0] ?? "Your learner"}
+      />
     </>
   );
 }

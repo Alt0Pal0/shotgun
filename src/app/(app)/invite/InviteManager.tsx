@@ -2,14 +2,22 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api, newIdempotencyKey } from "@/lib/client/api";
-import { BRAND } from "@/lib/brand";
+import { linkInviteShareText } from "@/lib/brand";
 import type { Invitation, RelationshipAdult } from "@/lib/types";
 import { Button } from "@/components/ui/Button";
 import { Alert } from "@/components/ui/Alert";
 import { Card } from "@/components/ui/Page";
 import { fmtDateTime } from "@/lib/util/format";
 
-export function InviteManager({ adults, invitations }: { adults: RelationshipAdult[]; invitations: Invitation[] }) {
+export function InviteManager({
+  adults,
+  invitations,
+  learnerName,
+}: {
+  adults: RelationshipAdult[];
+  invitations: Invitation[];
+  learnerName: string;
+}) {
   const router = useRouter();
   const [link, setLink] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -43,7 +51,7 @@ export function InviteManager({ adults, invitations }: { adults: RelationshipAdu
         /* cancelled */
       }
     }
-    await navigator.clipboard.writeText(link);
+    await navigator.clipboard.writeText(linkInviteShareText(learnerName, link));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -66,7 +74,9 @@ export function InviteManager({ adults, invitations }: { adults: RelationshipAdu
       <Card>
         {link ? (
           <div className="space-y-3">
-            <p className="text-sm">Share this link with your adult. It works once.</p>
+            <p className="text-sm">
+              Send this to the adult who will ride shotgun. The link works once and expires in 7 days.
+            </p>
             <p className="break-all rounded-lg bg-surface-2 p-2 text-xs numeral" data-testid="invite-link">
               {link}
             </p>
@@ -81,7 +91,7 @@ export function InviteManager({ adults, invitations }: { adults: RelationshipAdu
           </div>
         ) : (
           <Button onClick={create} loading={busy} size="lg" block>
-            Create invitation link
+            Invite an adult to ride shotgun
           </Button>
         )}
         {err && (
@@ -90,7 +100,7 @@ export function InviteManager({ adults, invitations }: { adults: RelationshipAdu
           </div>
         )}
       </Card>
-      <Card title="Linked adults">
+      <Card title="Your shotgun crew">
         {adults.length ? (
           <ul className="space-y-2">
             {adults.map((a) => (
@@ -116,7 +126,9 @@ export function InviteManager({ adults, invitations }: { adults: RelationshipAdu
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-muted">No adults linked yet.</p>
+          <p className="text-sm text-muted">
+            No one is riding shotgun yet. Invite a parent or another licensed adult 25+.
+          </p>
         )}
       </Card>
       {invitations.length > 0 && (

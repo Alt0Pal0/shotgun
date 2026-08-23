@@ -1,9 +1,34 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { BRAND } from "@/lib/brand";
 import { backendConfigured, getBackend } from "@/lib/backend";
 import { redirect } from "next/navigation";
 import { AcceptInvite } from "./AcceptInvite";
 import { Shell, PageHeader } from "@/components/ui/Page";
 import { Alert } from "@/components/ui/Alert";
+
+export async function generateMetadata({ params }: { params: Promise<{ token: string }> }): Promise<Metadata> {
+  const { token } = await params;
+  let first = "A learner driver";
+  try {
+    if (backendConfigured()) {
+      const p = await (
+        await getBackend()
+      ).rpc<{ valid: boolean; learner_display_name?: string }>("preview_invitation", { p_token: token });
+      if (p?.valid && p.learner_display_name) first = p.learner_display_name.split(" ")[0];
+    }
+  } catch {
+    /* generic */
+  }
+  const title = `${first} wants you to ride shotgun 🤘`;
+  const description = `Come ride shotgun with me on ${BRAND}. Link your account to supervise, review, and approve practice drives.`;
+  return {
+    title,
+    description,
+    openGraph: { title, description, type: "website" },
+    twitter: { card: "summary_large_image", title, description },
+  };
+}
 
 export default async function AcceptInvitePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -21,7 +46,7 @@ export default async function AcceptInvitePage({ params }: { params: Promise<{ t
     <Shell>
       <PageHeader
         eyebrow="Invitation"
-        title={preview.valid ? `Supervise ${preview.learner_display_name}` : "Invitation unavailable"}
+        title={preview.valid ? `Ride shotgun with ${preview.learner_display_name}?` : "Invitation unavailable"}
       />
       {!preview.valid ? (
         <Alert tone="warn">

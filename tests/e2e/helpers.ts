@@ -40,7 +40,7 @@ export async function createLearner(
 
 export async function inviteLink(learner: Page): Promise<string> {
   await learner.goto("/invite");
-  await learner.getByRole("button", { name: "Create invitation link" }).click();
+  await learner.getByRole("button", { name: /Invite an adult to ride shotgun/ }).click();
   const link = await learner.getByTestId("invite-link").textContent();
   expect(link).toContain("/invite/");
   return link as string;
@@ -56,9 +56,9 @@ export async function createAdult(
   await page.goto(link);
   await page.getByRole("link", { name: "Create account" }).click();
   const email = await signUp(page, "adult", name, false);
-  await expect(page.getByRole("heading", { name: /Supervise/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Ride shotgun with/ })).toBeVisible();
   await page.getByLabel("Supervisor attestation").check();
-  await page.getByRole("button", { name: "Accept and link" }).click();
+  await page.getByRole("button", { name: /Accept/ }).click();
   await expect(page.getByRole("heading", { name: "Reviews" })).toBeVisible();
   return { ctx, page, email };
 }

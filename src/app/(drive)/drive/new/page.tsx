@@ -14,8 +14,8 @@ export default async function NewDrivePage() {
     <>
       <PageHeader
         eyebrow="Pre-drive"
-        title="Ready to practice?"
-        subtitle="Complete this while parked. Your supervising adult confirms on their phone, then the app locks."
+        title="Who's riding shotgun today?"
+        subtitle="Complete this while parked. Your shotgun confirms on their phone, then the app locks."
       />
       <PreDriveForm
         adults={adults.map((a) => ({ id: a.adult.id, name: a.adult.display_name }))}

@@ -11,7 +11,7 @@ export default async function SignUpPage({
   return (
     <AuthShell
       title="Create your account"
-      subtitle="Private beta for California learner drivers and their supervising adults."
+      subtitle="Private beta for California learner drivers and the adults who ride shotgun."
     >
       <SignUpForm
         defaultRole={sp.role === "adult" ? "adult" : sp.role === "learner" ? "learner" : null}

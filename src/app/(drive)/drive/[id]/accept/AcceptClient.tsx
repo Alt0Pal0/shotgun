@@ -88,21 +88,21 @@ export function AcceptClient({ session, isDesignated }: { session: SessionDetail
     <>
       <PageHeader
         eyebrow="Drive request"
-        title={`${session.learner?.display_name} wants to start a drive`}
-        subtitle="Confirm each item. The learner's phone locks the moment the drive starts."
+        title={`${session.learner?.display_name} called shotgun — for you`}
+        subtitle="Confirm each item from the passenger seat. The learner's phone locks the moment the drive starts."
       />
       {session.vehicle && <p className="mb-3 text-sm text-muted">Vehicle: {session.vehicle.label}</p>}
       <div className="space-y-2">
         <Checkbox
           checked={c.designated_supervisor}
           onChange={(e) => setC({ ...c, designated_supervisor: e.target.checked })}
-          label="I am the designated in-car supervisor for this drive"
+          label="I'm riding shotgun on this drive as the designated supervising adult"
           hint="A California-licensed adult age 25 or older, per my attestation."
         />
         <Checkbox
           checked={c.physically_present}
           onChange={(e) => setC({ ...c, physically_present: e.target.checked })}
-          label="I am physically present in the vehicle"
+          label="I'm physically in the passenger seat"
         />
         <Checkbox
           checked={c.vehicle_parked}
@@ -122,7 +122,7 @@ export function AcceptClient({ session, isDesignated }: { session: SessionDetail
       )}
       <div className="mt-4 space-y-2">
         <Button size="xl" block disabled={!all} loading={busy} onClick={accept}>
-          Confirm and start
+          Shotgun! Let's go
         </Button>
         <Button variant="ghost" block onClick={decline}>
           Decline
