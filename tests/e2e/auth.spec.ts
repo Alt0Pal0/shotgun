@@ -30,7 +30,9 @@ test("sign out, sign in with the seeded/previous account, session persistence, a
 test("an unverified account cannot use the app or API until verified", async ({ browser }) => {
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
-  await page.goto("/sign-up?role=learner");
+  await page.goto("/sign-up");
+  await expect(page.getByRole("button", { name: "Create account" })).toBeDisabled();
+  await page.getByText("Learner driver", { exact: true }).click();
   await page.getByLabel("Your name").fill("Unverified");
   await page.getByLabel("Email").fill(`unverified-${Date.now()}@example.test`);
   await page.getByLabel("Password").fill("correct-horse-battery");

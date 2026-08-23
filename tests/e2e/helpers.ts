@@ -3,6 +3,7 @@ import { expect, type Browser, type BrowserContext, type Page } from "@playwrigh
 export async function signUp(page: Page, role: "learner" | "adult", name: string, navigate = true): Promise<string> {
   const email = `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.test`;
   if (navigate) await page.goto(`/sign-up?role=${role}`);
+  await page.getByText(role === "learner" ? "Learner driver" : "Parent / supervisor", { exact: true }).click();
   await page.getByLabel("Your name").fill(name);
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill("correct-horse-battery");

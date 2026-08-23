@@ -19,7 +19,10 @@ export async function signUpAction(_: AuthState, form: FormData): Promise<AuthSt
   });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Check the form" };
   const backend = await getBackend();
-  const r = await backend.signUp(parsed.data);
+  const r = await backend.signUp(parsed.data).catch((e: Error) => {
+    console.error("[signUp] unexpected", e);
+    return { ok: false as const, error: "Sign-up failed unexpectedly. Please try again." };
+  });
   if (!r.ok) return { error: r.error };
   await backend
     .rpc("track_event", { p_event: "account_created", p_props: { role: parsed.data.role } })

@@ -6,9 +6,9 @@ import { Checkbox, Input } from "@/components/ui/Field";
 import { Alert } from "@/components/ui/Alert";
 import { BETA_TERMS_PLACEHOLDER, PRIVACY_COPY } from "@/lib/copy";
 
-export function SignUpForm({ defaultRole, next }: { defaultRole: "learner" | "adult"; next?: string }) {
+export function SignUpForm({ defaultRole, next }: { defaultRole: "learner" | "adult" | null; next?: string }) {
   const [state, action, pending] = useActionState<AuthState, FormData>(signUpAction, {});
-  const [role, setRole] = useState(defaultRole);
+  const [role, setRole] = useState<"learner" | "adult" | null>(defaultRole);
   const [form, setForm] = useState({ displayName: "", email: "", password: "", ageConfirmed: false });
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [k]: e.target.type === "checkbox" ? e.target.checked : e.target.value });
@@ -16,7 +16,9 @@ export function SignUpForm({ defaultRole, next }: { defaultRole: "learner" | "ad
     <form action={action} className="space-y-4">
       {next && <input type="hidden" name="next" value={next} />}
       <fieldset>
-        <legend className="mb-2 text-sm font-medium">I am a…</legend>
+        <legend className="mb-2 text-sm font-medium">
+          I am a… <span className="text-rose">*</span>
+        </legend>
         <div className="grid grid-cols-2 gap-2">
           {(["learner", "adult"] as const).map((r) => (
             <label
@@ -78,7 +80,8 @@ export function SignUpForm({ defaultRole, next }: { defaultRole: "learner" | "ad
         }
       />
       {state.error && <Alert tone="error">{state.error}</Alert>}
-      <Button type="submit" size="lg" block loading={pending}>
+      {!role && <p className="text-xs text-muted">Choose Learner driver or Parent / supervisor to continue.</p>}
+      <Button type="submit" size="lg" block loading={pending} disabled={!role}>
         Create account
       </Button>
       <p className="text-xs text-muted">{PRIVACY_COPY}</p>

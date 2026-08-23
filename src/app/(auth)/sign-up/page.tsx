@@ -13,7 +13,10 @@ export default async function SignUpPage({
       title="Create your account"
       subtitle="Private beta for California learner drivers and their supervising adults."
     >
-      <SignUpForm defaultRole={sp.role === "adult" ? "adult" : "learner"} next={sp.next} />
+      <SignUpForm
+        defaultRole={sp.role === "adult" ? "adult" : sp.role === "learner" ? "learner" : null}
+        next={sp.next}
+      />
       <p className="mt-6 text-center text-sm text-muted">
         Already have an account?{" "}
         <Link

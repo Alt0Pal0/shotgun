@@ -128,7 +128,10 @@ async function issueAndSend(email: string, kind: "verify" | "reset"): Promise<Au
     email,
     kind === "verify" ? "Verify your email" : "Reset your password",
     link,
-    kind === "verify" ? `Confirm your email to start using ${BRAND}:` : "Choose a new password:",
+    kind === "verify"
+      ? `Confirm your email address to start using ${BRAND}.`
+      : "Tap the button to choose a new password for your account.",
+    kind === "verify" ? "Verify my email" : "Reset password",
   );
   return { ok: true, needsVerification: kind === "verify", devVerifyUrl: r.devLink?.replace(appUrl(), "") };
 }

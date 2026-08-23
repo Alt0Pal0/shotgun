@@ -1,5 +1,6 @@
 import "server-only";
-import { BRAND } from "@/lib/brand";
+import { BRAND, BRAND_HORNS } from "@/lib/brand";
+import { renderEmail } from "./template";
 
 /**
  * Transactional email. Uses Resend's HTTP API when RESEND_API_KEY is set. Otherwise, in development or when
@@ -11,7 +12,13 @@ export interface SendResult {
   devLink?: string;
 }
 
-export async function sendAuthEmail(to: string, subject: string, link: string, intro: string): Promise<SendResult> {
+export async function sendAuthEmail(
+  to: string,
+  subject: string,
+  link: string,
+  intro: string,
+  cta = "Open link",
+): Promise<SendResult> {
   const key = process.env.RESEND_API_KEY;
   if (key) {
     const res = await fetch("https://api.resend.com/emails", {
@@ -20,9 +27,9 @@ export async function sendAuthEmail(to: string, subject: string, link: string, i
       body: JSON.stringify({
         from: process.env.EMAIL_FROM ?? `${BRAND} <onboarding@resend.dev>`,
         to: [to],
-        subject,
-        text: `${intro}\n\n${link}\n\nIf you did not request this, you can ignore this email.`,
-        html: `<p>${intro}</p><p><a href="${link}">${link}</a></p><p style="color:#666;font-size:12px">If you did not request this, you can ignore this email.</p>`,
+        subject: `${subject} · ${BRAND}`,
+        text: `${BRAND_HORNS}\n\n${subject}\n\n${intro}\n\n${link}\n\nThis link expires soon and works once. If you didn't request it, you can ignore this email.`,
+        html: renderEmail({ subject, intro, link, cta }),
       }),
     });
     if (!res.ok) {
