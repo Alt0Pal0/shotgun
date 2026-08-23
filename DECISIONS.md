@@ -123,3 +123,15 @@ Format: ambiguity → chosen interpretation → alternatives → reasoning → d
 
 - The PRD's working title "Learner Driver Platform" is replaced by **Shotgun.Rocks** (domain shotgun.rocks). Brand
   strings live in `src/lib/brand.ts`; the PRD/traceability docs keep the original title for requirement references.
+
+## D-020 Legal acceptance evidence (2026-08-22, owner decision)
+- Required checkboxes at sign-up (Terms + Privacy; Assumption of Risk/Release/Indemnification) and at invitation
+  acceptance (Supervisor Attestation; Parent/Guardian Consent). Each acceptance is an append-only row in
+  `legal_acceptances` with document key, version, SHA-256 of the exact text, timestamp, IP, user agent, and context;
+  users can read but never modify or delete their rows. `profiles.terms_version` gates the app: a version bump forces
+  re-acceptance at `/accept-terms`. Documents live in `src/lib/legal/documents.ts` and are marked DRAFT pending
+  attorney review — no claim of enforceability is made.
+
+## D-021 No hosted CI (2026-08-22, owner decision)
+- GitHub Actions disabled at the repository level to avoid paid minutes; `pnpm check` and `pnpm test:e2e` run locally
+  before pushes. Keep-warm pinging removed; Neon cold starts are mitigated with the invite loading screen only.

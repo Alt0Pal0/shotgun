@@ -70,6 +70,14 @@ export default async function ProfilePage() {
           <Link className="text-accent underline" href="/about">
             Why &ldquo;Shotgun&rdquo;? Rules of the game &amp; California shotgun-seat rules
           </Link>
+          <br />
+          <Link className="underline" href="/terms">
+            Terms of Use
+          </Link>{" "}
+          ·{" "}
+          <Link className="underline" href="/privacy">
+            Privacy Policy
+          </Link>
         </p>
         <form action={signOutAction}>
           <button type="submit" className="tap w-full rounded-xl border border-border py-3 text-sm font-semibold">

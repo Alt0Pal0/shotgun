@@ -7,6 +7,7 @@ export interface Profile {
   is_adult: boolean;
   timezone: string;
   unit_preference: "imperial" | "metric";
+  terms_version?: string | null;
 }
 export interface Track {
   id: string;

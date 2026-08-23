@@ -38,8 +38,21 @@ describe("zod schemas enforce PRD field limits", () => {
         displayName: "A",
         role: "adult",
         ageConfirmed: true,
+        acceptTerms: true,
+        acceptRisk: true,
       }).success,
     ).toBe(true);
+    expect(
+      signUpSchema.safeParse({
+        email: "a@b.co",
+        password: "longenough",
+        displayName: "A",
+        role: "adult",
+        ageConfirmed: true,
+        acceptTerms: true,
+        acceptRisk: false,
+      }).success,
+    ).toBe(false);
   });
   it("reflection: 280/280/500 limits and max five skills", () => {
     expect(reflectionSchema.safeParse({ rating: 3, went_well: "x".repeat(281) }).success).toBe(false);

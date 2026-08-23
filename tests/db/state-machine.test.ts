@@ -1,6 +1,7 @@
 import { describe, it, expect, afterAll } from "vitest";
 import { randomUUID } from "node:crypto";
 import {
+  as,
   closePool,
   expectDenied,
   linkAdult,
@@ -460,5 +461,45 @@ describe("drive session state machine", () => {
       [session.id],
     );
     expect(route2[0].route_geojson).toBeNull();
+  });
+});
+
+describe("legal acceptances", () => {
+  it("records append-only evidence with ip/user agent and is readable only by the user", async () => {
+    const u = await makeLearner();
+    const other = await makeLearner();
+    const r = await rpc<{ recorded: number }>(u, "record_legal_acceptance", [
+      JSON.stringify({
+        documents: [
+          { key: "terms", version: "v1", sha256: "a".repeat(64) },
+          { key: "risk_indemnity", version: "v1", sha256: "b".repeat(64) },
+        ],
+        ip: "203.0.113.7",
+        user_agent: "Probe/1.0",
+        context: { screen: "sign_up" },
+        terms_version: "v1",
+      }),
+    ]);
+    expect(r.recorded).toBe(2);
+    const rows = await select<{ document_key: string; ip: string; user_agent: string }>(
+      u,
+      "select document_key, host(ip) as ip, user_agent from legal_acceptances order by document_key",
+      [],
+    );
+    expect(rows.map((x) => x.document_key)).toEqual(["risk_indemnity", "terms"]);
+    expect(rows[0].ip).toBe("203.0.113.7");
+    expect(await select(other, "select 1 from legal_acceptances where user_id = $1", [u.id])).toHaveLength(0);
+    await expectDenied(as(u, (c) => c.query("delete from legal_acceptances where user_id = $1", [u.id])));
+    await expectDenied(
+      as(u, (c) =>
+        c.query("update legal_acceptances set accepted_at = now() - interval '1 year' where user_id = $1", [u.id]),
+      ),
+    );
+    const prof = await select<{ terms_version: string }>(u, "select terms_version from profiles where id = $1", [u.id]);
+    expect(prof[0].terms_version).toBe("v1");
+    const audit = await select(u, "select 1 from audit_events where entity_id = $1 and action = 'legal_accepted'", [
+      u.id,
+    ]);
+    expect(audit).toHaveLength(1);
   });
 });

@@ -2,6 +2,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { backendConfigured, getBackend, type Backend, type SessionUser } from "@/lib/backend";
 import type { Me, MyLive } from "@/lib/types";
+import { TERMS_VERSION } from "@/lib/legal/documents";
 
 export interface Ctx {
   backend: Backend;
@@ -19,6 +20,8 @@ export async function requireUser(
   if (!user) redirect("/sign-in");
   if (!user.emailVerified && !opts.allowUnverified) redirect("/verify");
   const me = await backend.rpc<Me>("me");
+  // Everyone must have accepted the current terms (recorded with IP/UA) before using the product.
+  if (me.profile && me.profile.terms_version !== TERMS_VERSION) redirect("/accept-terms");
   if (opts.enforceLock !== false) {
     // The lock is a server fact: any learner page renders the locked route while a session is live.
     const live = await backend.rpc<MyLive>("my_live_session");

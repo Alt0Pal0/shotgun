@@ -2,6 +2,8 @@
 import { redirect } from "next/navigation";
 import { getBackend } from "@/lib/backend";
 import { signInSchema, signUpSchema } from "@/lib/validation/schemas";
+import { recordAcceptances } from "@/lib/legal/record";
+import { PRIVACY, RISK, TERMS } from "@/lib/legal/documents";
 
 export interface AuthState {
   error?: string;
@@ -16,6 +18,8 @@ export async function signUpAction(_: AuthState, form: FormData): Promise<AuthSt
     displayName: form.get("displayName"),
     role: form.get("role"),
     ageConfirmed: form.get("ageConfirmed") === "on",
+    acceptTerms: form.get("acceptTerms") === "on",
+    acceptRisk: form.get("acceptRisk") === "on",
   });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Check the form" };
   const backend = await getBackend();
@@ -24,6 +28,15 @@ export async function signUpAction(_: AuthState, form: FormData): Promise<AuthSt
     return { ok: false as const, error: "Sign-up failed unexpectedly. Please try again." };
   });
   if (!r.ok) return { error: r.error };
+  // A session exists only for genuinely new accounts; existing-email sign-ups record nothing.
+  if (await backend.getUser()) {
+    await recordAcceptances(
+      backend,
+      [TERMS, PRIVACY, RISK],
+      { screen: "sign_up", role: parsed.data.role, age_confirmed: true },
+      true,
+    ).catch((e) => console.error("[legal] record failed", e));
+  }
   await backend
     .rpc("track_event", { p_event: "account_created", p_props: { role: parsed.data.role } })
     .catch(() => undefined);

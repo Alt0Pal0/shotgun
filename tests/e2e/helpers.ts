@@ -8,6 +8,8 @@ export async function signUp(page: Page, role: "learner" | "adult", name: string
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill("correct-horse-battery");
   await page.getByLabel("I am 13 or older").check();
+  await page.getByLabel(/agree to the/).check();
+  await page.getByLabel(/Assumption of Risk/).check();
   await page.getByRole("button", { name: "Create account" }).click();
   await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
   // Local backend: verification link is rendered on the page instead of emailed.
@@ -58,6 +60,7 @@ export async function createAdult(
   const email = await signUp(page, "adult", name, false);
   await expect(page.getByRole("heading", { name: /Ride shotgun with/ })).toBeVisible();
   await page.getByLabel("Supervisor attestation").check();
+  await page.getByLabel("Parent/Guardian Consent").check();
   await page.getByRole("button", { name: /Accept/ }).click();
   await expect(page.getByRole("heading", { name: "Reviews" })).toBeVisible();
   return { ctx, page, email };

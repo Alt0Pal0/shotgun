@@ -42,8 +42,8 @@ export function InviteManager({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Supervise my driving practice",
-          text: `Join me on ${BRAND} to review my drives.`,
+          title: "Come ride shotgun with me 🤘",
+          text: linkInviteShareText(learnerName, link),
           url: link,
         });
         return;

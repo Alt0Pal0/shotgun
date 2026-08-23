@@ -9,6 +9,8 @@ export const signUpSchema = z.object({
   displayName: z.string().trim().min(1).max(60),
   role: z.enum(["learner", "adult"]),
   ageConfirmed: z.literal(true, { error: "You must confirm you are 13 or older" }),
+  acceptTerms: z.literal(true, { error: "You must accept the Terms of Use and Privacy Policy" }),
+  acceptRisk: z.literal(true, { error: "You must accept the Assumption of Risk, Release, and Indemnification" }),
 });
 export const signInSchema = z.object({ email: z.string().email(), password: z.string().min(1) });
 
@@ -17,7 +19,11 @@ export const licenseTrackSchema = z.object({
   permitIssueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
 });
 
-export const acceptInvitationSchema = z.object({ token: z.string().min(32).max(128), attestation: z.literal(true) });
+export const acceptInvitationSchema = z.object({
+  token: z.string().min(32).max(128),
+  attestation: z.literal(true),
+  guardian_consent: z.literal(true),
+});
 
 export const requestDriveSchema = z.object({
   supervisor_id: uuid,

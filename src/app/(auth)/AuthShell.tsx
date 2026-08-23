@@ -8,8 +8,16 @@ export function AuthShell({ title, subtitle, children }: { title: string; subtit
       {subtitle && <p className="mt-2 text-sm text-muted">{subtitle}</p>}
       <div className="mt-6">{children}</div>
       <p className="mt-8 text-center text-xs text-muted">
-        <a className="underline" href="/about">
+        <a className="tap inline-flex items-center px-2 underline" href="/about">
           Why &ldquo;Shotgun&rdquo;?
+        </a>{" "}
+        ·{" "}
+        <a className="tap inline-flex items-center px-2 underline" href="/terms">
+          Terms
+        </a>{" "}
+        ·{" "}
+        <a className="tap inline-flex items-center px-2 underline" href="/privacy">
+          Privacy
         </a>
       </p>
     </main>

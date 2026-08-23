@@ -37,6 +37,8 @@ test("an unverified account cannot use the app or API until verified", async ({ 
   await page.getByLabel("Email").fill(`unverified-${Date.now()}@example.test`);
   await page.getByLabel("Password").fill("correct-horse-battery");
   await page.getByLabel("I am 13 or older").check();
+  await page.getByLabel(/agree to the/).check();
+  await page.getByLabel(/Assumption of Risk/).check();
   await page.getByRole("button", { name: "Create account" }).click();
   await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
   await page.goto("/home");
@@ -59,6 +61,8 @@ test("signing up with an existing email does not reveal the account", async ({ b
   await page.getByLabel("Email").fill(learner.email);
   await page.getByLabel("Password").fill("another-password-123");
   await page.getByLabel("I am 13 or older").check();
+  await page.getByLabel(/agree to the/).check();
+  await page.getByLabel(/Assumption of Risk/).check();
   await page.getByRole("button", { name: "Create account" }).click();
   await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
   await expect(page.getByText(/already exists/)).toHaveCount(0);
