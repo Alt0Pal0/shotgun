@@ -1,10 +1,10 @@
 import { BRAND, BRAND_DOMAIN } from "@/lib/brand";
 
 /**
- * Legal documents shown to users. DRAFT — prepared for attorney review; not legal advice and not yet reviewed.
+ * Legal documents shown to users. Version 2026-08-22 reviewed by counsel (owner confirmation, 2026-08-22).
  * Bump TERMS_VERSION whenever any text changes; every user must re-accept and the acceptance hash changes.
  */
-export const TERMS_VERSION = "2026-08-22-draft1";
+export const TERMS_VERSION = "2026-08-22";
 export const LEGAL_CONTACT = `legal@${BRAND_DOMAIN}`;
 
 export interface LegalDoc {
@@ -18,7 +18,7 @@ export const TERMS: LegalDoc = {
   key: "terms",
   title: "Terms of Use",
   summary: `I have read and agree to the ${BRAND} Terms of Use and Privacy Policy.`,
-  body: `TERMS OF USE — ${BRAND} (${TERMS_VERSION}) — DRAFT PENDING ATTORNEY REVIEW
+  body: `TERMS OF USE — ${BRAND} (${TERMS_VERSION})
 
 1. Who we are and what this is. ${BRAND} ("the Service," "we," "us") is a record-keeping and coaching aid for learner drivers and the licensed adults who supervise them. The Service helps families log supervised practice, reflect on drives, and track progress toward California licensing requirements. The Service is not a driving school, is not affiliated with the California DMV or any government agency, does not certify hours, and does not replace the official permit, the driving-school certificate, or any DMV record.
 
@@ -49,7 +49,7 @@ export const PRIVACY: LegalDoc = {
   key: "privacy",
   title: "Privacy Policy",
   summary: "Privacy Policy",
-  body: `PRIVACY POLICY — ${BRAND} (${TERMS_VERSION}) — DRAFT PENDING ATTORNEY REVIEW
+  body: `PRIVACY POLICY — ${BRAND} (${TERMS_VERSION})
 
 What we collect. Account information (name, email, password hash); learner permit profile (state and permit issue date only — no permit number, license number, or ID images); drive records (time, GPS samples and derived routes and distances, GPS quality); reflections, observations, ratings, and feedback; relationships between learner and adult accounts; device and browser information; and legal acceptances with timestamp, IP address, and user agent.
 
@@ -73,7 +73,7 @@ export const RISK: LegalDoc = {
   title: "Assumption of Risk, Release, and Indemnification",
   summary:
     "I understand driving is dangerous, that this app is only a record-keeping aid that cannot make driving safe, and I accept the Assumption of Risk, Release, and Indemnification below.",
-  body: `ASSUMPTION OF RISK, RELEASE, AND INDEMNIFICATION — ${BRAND} (${TERMS_VERSION}) — DRAFT PENDING ATTORNEY REVIEW
+  body: `ASSUMPTION OF RISK, RELEASE, AND INDEMNIFICATION — ${BRAND} (${TERMS_VERSION})
 
 I acknowledge that operating or supervising the operation of a motor vehicle involves serious risks, including injury, death, and property damage, and that a learner driver is by definition inexperienced. I understand that ${BRAND} is only a record-keeping and coaching aid: it does not control the vehicle, cannot see the road, cannot prevent distraction, and its screen lock applies only within the app.
 
@@ -93,7 +93,7 @@ export const GUARDIAN_CONSENT: LegalDoc = {
   title: "Parent/Guardian Consent",
   summary:
     "I am the parent or legal guardian of this learner (or am authorized by one), I consent to the learner's use of the Service, and I accept the Terms of Use and the Assumption of Risk, Release, and Indemnification on the learner's behalf and my own.",
-  body: `PARENT/GUARDIAN CONSENT — ${BRAND} (${TERMS_VERSION}) — DRAFT PENDING ATTORNEY REVIEW
+  body: `PARENT/GUARDIAN CONSENT — ${BRAND} (${TERMS_VERSION})
 
 I am the parent or legal guardian of the learner who invited me, or I am acting with the authorization of that parent or guardian. I consent to the learner's creation and use of a ${BRAND} account, including the collection of the learner's location during practice drives and its sharing with linked adults. I accept the Terms of Use, the Privacy Policy, and the Assumption of Risk, Release, and Indemnification on the learner's behalf and on my own behalf, and I agree that I am responsible for the learner's compliance with California licensing rules while I supervise.`,
 };
