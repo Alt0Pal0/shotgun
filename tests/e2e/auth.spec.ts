@@ -48,3 +48,21 @@ test("an unverified account cannot use the app or API until verified", async ({ 
   ).toBe(403);
   await ctx.close();
 });
+
+test("signing up with an existing email does not reveal the account", async ({ browser }) => {
+  const learner = await createLearner(browser, "Enum Learner");
+  const ctx = await browser.newContext();
+  const page = await ctx.newPage();
+  await page.goto("/sign-up");
+  await page.getByText("Learner driver", { exact: true }).click();
+  await page.getByLabel("Your name").fill("Imposter");
+  await page.getByLabel("Email").fill(learner.email);
+  await page.getByLabel("Password").fill("another-password-123");
+  await page.getByLabel("I am 13 or older").check();
+  await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
+  await expect(page.getByText(/already exists/)).toHaveCount(0);
+  expect((await page.request.get("/api/me")).status()).toBe(401); // no session was created for the imposter
+  await ctx.close();
+  await learner.ctx.close();
+});

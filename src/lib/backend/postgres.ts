@@ -160,13 +160,37 @@ export const postgresBackend: Backend = {
     );
   },
   async signUp({ email, password, displayName, role }): Promise<AuthResult> {
+    let r: { user_id: string; verify_token: string };
     try {
-      const r = await server<{ user_id: string; verify_token: string }>("auth_sign_up", {
+      r = await server("auth_sign_up", {
         p_email: email,
         p_password: password,
         p_display_name: displayName,
         p_role: role,
       });
+    } catch (e) {
+      const err = e as AppError;
+      if (err.code === "CONFLICT") {
+        // Do not reveal that the address is registered: show the same screen and email the owner a sign-in/reset link.
+        try {
+          const token = await server<string | null>("auth_issue_token", { p_email: email, p_kind: "reset" });
+          if (token) {
+            await sendAuthEmail(
+              email,
+              "You already have an account",
+              `${appUrl()}/auth/reset?token=${token}`,
+              `Someone tried to create a ${BRAND} account with this email, but you already have one. Sign in with your password, or use the button to choose a new one.`,
+              "Reset password",
+            );
+          }
+        } catch {
+          /* never surface delivery problems for an existing account */
+        }
+        return { ok: true, needsVerification: true };
+      }
+      return { ok: false, error: err.message };
+    }
+    try {
       const sid = await server<string>("auth_create_session", { p_user: r.user_id });
       await setCookie(sid);
       const link = `${appUrl()}/auth/verify?token=${r.verify_token}`;
@@ -175,7 +199,8 @@ export const postgresBackend: Backend = {
           email,
           "Verify your email",
           link,
-          `Confirm your email to start using ${BRAND}:`,
+          `Welcome! Confirm your email address to start using ${BRAND}.`,
+          "Verify my email",
         );
         return { ok: true, needsVerification: true, devVerifyUrl: sent.devLink?.replace(appUrl(), "") };
       } catch (e) {

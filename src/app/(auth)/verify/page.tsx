@@ -16,7 +16,11 @@ export default async function VerifyPage({
   return (
     <AuthShell
       title="Check your email"
-      subtitle={`We sent a verification link${user?.email ? ` to ${user.email}` : ""}. Open it on this phone to continue.`}
+      subtitle={
+        user?.email
+          ? `We sent a verification link to ${user.email}. Open it on this phone to continue.`
+          : "If this address is new, we sent a verification link. If it already has an account, we sent sign-in help instead. Open the email on this phone to continue."
+      }
     >
       {sp.emailError && (
         <p className="mb-4 rounded-xl border border-rose/50 bg-rose/10 p-3 text-sm">
